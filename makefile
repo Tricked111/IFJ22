@@ -5,7 +5,7 @@ SCANNER=src/scanner/scanner
 PARSER=src/parser/parser
 
 OBJFILES = $(SCANNER).o $(PARSER).o main.o
-NAME=main
+NAME=IFJ22
 
 
 all: $(NAME)
