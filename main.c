@@ -2,8 +2,9 @@
  *                                  IFJ22
  *                                  main.c
  * 
- *      Authors: Kniazkin Daniil (xkniaz00)
-                 Erik Hrubý      (xhruby30)
+ *      Authors: Kniazkin Daniil   (xkniaz00)
+                 Erik Hrubý        (xhruby30)
+                 Alžbeta Hricovová (xhrico00)
  *                    Purpose: Main function of compiler
  * 
  *                        Last change: 2. 10. 2022
