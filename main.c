@@ -3,6 +3,7 @@
  *                                  main.c
  * 
  *      Authors: Kniazkin Daniil (xkniaz00)
+                 Erik Hrubý      (xhruby30)
  *                    Purpose: Main function of compiler
  * 
  *                        Last change: 2. 10. 2022
