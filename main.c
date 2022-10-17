@@ -5,6 +5,7 @@
  *      Authors: Kniazkin Daniil   (xkniaz00)
                  Erik Hrubý        (xhruby30)
                  Alžbeta Hricovová (xhrico00)
+                 Nikita Kotvitskiy (xkotvi01)
  *                    Purpose: Main function of compiler
  * 
  *                        Last change: 2. 10. 2022
