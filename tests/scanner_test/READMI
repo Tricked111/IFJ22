@@ -1,1 +1,4 @@
 Here is test for scanner
+1. Download scanner.c, scanner.h, ifj_string.c, ifj_string.h, scanner_test.c, Makefile and test.txt
+2. Compile the scanner with make command
+3. Launch the test by ./ct <test.txt
