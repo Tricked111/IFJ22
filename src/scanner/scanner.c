@@ -148,7 +148,7 @@ FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
                 return Assig;
             }
             if (ch == '!') {
-                tok->type = Operator;
+                tok->type = oper_tok;
                 return OperInter3;
             }
             if (ch == '<' || ch == '>') {
@@ -182,7 +182,7 @@ FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
             if (ch == EOF)
             {
                 tok->type = eof_tok;
-                scan->doNotWriteCurrentChar;
+                scan->doNotWriteCurrentChar = true;
                 return EndOfTok;
             }
             return Error;
@@ -262,7 +262,7 @@ FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
             if (ch == '=')
                 return OperInter1;
             return Error;
-        case Slash:
+        /* case Slash:
             if (ch == '/')
                 return LineCom;
             if (ch == '*')
@@ -287,7 +287,7 @@ FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
                 scan->doNotWriteCurrentChar;
                 return EndOfTok;
             }
-            return LineCom;
+            return LineCom; */
         case BlockCom:
             if (ch == '*')
                 return BlockComEnd;

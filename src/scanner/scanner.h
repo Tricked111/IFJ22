@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 //States of scanner FSM.
-typedef enum {
+typedef enum FsmState{
     Start,
     Num,
     FloatDot,
@@ -78,7 +78,7 @@ typedef struct Token {
 typedef struct Scanner {
     int charToProcess;             //Char which is currently processed.
     string_t tokenString;
-    TokenType state;
+    FSMSTate state;
     bool doNotWriteCurrentChar;     //If true, charToProcess will not be appended at the end of tokenString.
                                     //It is useful if we read the first symbol of next token.
 } scanner_t;
