@@ -48,7 +48,7 @@ typedef enum FsmState{
 } FSMSTate;
 
 //Types of tokens.
-typedef enum {
+typedef enum TOKENtype{
     init_tok,
     id_tok,
     var_tok,

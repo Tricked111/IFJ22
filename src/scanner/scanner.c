@@ -297,6 +297,8 @@ FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
             return BlockCom;
         case BlockComEnd:
             if (ch == '/') {
+                scan->doNotWriteCurrentChar = true;
+                scan->charToProcess = '\0';
                 stringClear(&(scan->tokenString));
                 return Start;
             }
