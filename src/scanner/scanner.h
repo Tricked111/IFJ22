@@ -1,4 +1,3 @@
-
 /******************************************************************************
  *                                  IFJ22
  *                                scanner.h
@@ -12,7 +11,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#include "ifj_string.h"
+#include "../str/ifj_string.h"
 #include <ctype.h>
 #include <stdbool.h>
 
@@ -38,6 +37,7 @@ typedef enum {
     Assig,
     OperInter1,
     OperInter2,
+    OperInter3,
     Slash,
     LineCom,
     BlockCom,

@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "scanner.h"
-#include "ifj_string.h"
 
 //Adds data from scanner on scanner address to read token on token address.
 void finishToken(scanner_t * scanner, token_t * token);
@@ -150,7 +149,7 @@ FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
             }
             if (ch == '!') {
                 tok->type = Operator;
-                return OperInter1;
+                return OperInter3;
             }
             if (ch == '<' || ch == '>') {
                 tok->type = oper_tok;
@@ -244,18 +243,25 @@ FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
             return EndOfTok;
         case Assig:
             if (ch == '=')
-                return OperInter2;
+                return OperInter1;
             scan->doNotWriteCurrentChar = true;
             return EndOfTok;
         case OperInter1:
             if (ch == '=')
-                return OperInter2;
+            {
+                tok->type = oper_tok;
+                return Operator;
+            }
             return Error;
         case OperInter2:
             if (ch == '=')
                 return Operator;
             scan->doNotWriteCurrentChar = true;
             return Operator;
+        case OperInter3:
+            if (ch == '=')
+                return OperInter1;
+            return Error;
         case Slash:
             if (ch == '/')
                 return LineCom;
