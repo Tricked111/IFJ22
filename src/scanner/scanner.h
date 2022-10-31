@@ -16,54 +16,67 @@
 #include <stdbool.h>
 
 //States of scanner FSM.
-typedef enum FsmState{
+typedef enum {
     Start,
     Num,
-    FloatDot,
-    FloatE,
+    FloatInter1,
+    FloatInter2,
     Float,
-    StringStart,
+    Question,
+    PhpEnd,
+    Less,
+    LQ,
+    P,
+    PH,
+    PhpStart,
+    More,
+    Slash,
+    Comment,
+    BlockCom,
+    BCInter,
+    Oper,
+    OperInter1,
+    OperInter2,
+    ID,
+    Assig,
+    CBracket,
+    Bracket,
+    Comma,
+    Semicolon,
+    Colon,
+    End,
+    String,
     EsqSeq,
     StringEnd,
     VarStart,
-    VarName,
-    Identifier,
-    Colon,
-    Semicolon,
-    Comma,
-    Brack,
-    CBrack,
-    Operator,
-    Assig,
-    OperInter1,
-    OperInter2,
-    OperInter3,
-    Slash,
-    LineCom,
-    BlockCom,
-    BlockComEnd,
-    Error,
-    EndOfTok,
-    EndOfFile
-} FSMSTate;
+    Var
+} ScannerStates;
 
 //Types of tokens.
 typedef enum {
-    init_tok,
-    id_tok,
-    var_tok,
-    int_tok,
-    float_tok, 
-    string_tok,
-    brack_tok,
-    c_brack_tok,
-    oper_tok,
-    comma_tok,
-    semicolon_tok,
-    colon_tok,
-    assig_tok,
-    eof_tok
+    FLOAT,
+    INT,
+    PHP_END,
+    PHP_START,
+    OPER, 
+    ASSIG,
+    IDEN,
+    CBRACK,
+    BRACK,
+    COMMA,
+    SEMICOLON,
+    COLON,
+    END,
+    STRING,
+    VAR
 } TokenType;
+
+typedef enum {
+    WRITE,
+    SKIP,
+    NEXT,
+    CLEAN
+} ScannerActions;
 
 
 typedef struct Token {
@@ -76,11 +89,10 @@ typedef struct Token {
 } token_t;
 
 typedef struct Scanner {
-    int charToProcess;             //Char which is currently processed.
-    string_t tokenString;
-    FSMSTate state;
-    bool doNotWriteCurrentChar;     //If true, charToProcess will not be appended at the end of tokenString.
-                                    //It is useful if we read the first symbol of next token.
+    int symbol;
+    ScannerActions action;
+    ScannerStates state;
+    token_t * token;
 } scanner_t;
 
 //Initiates scanner on scanner address.
