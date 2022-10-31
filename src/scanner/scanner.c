@@ -13,28 +13,26 @@
 #include <stdlib.h>
 #include "scanner.h"
 
-//Adds data from scanner on scanner address to read token on token address.
-void finishToken(scanner_t * scanner, token_t * token);
-//Ruturns new state of scanner on scan address and set type of token on tok address based on new-read symbol on ch.
-FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch);
-
-void scannerInit(scanner_t * scanner) {
-    stringInit(&(scanner->tokenString));
-    scanner->charToProcess = '\0';              //Symbol '\0' means that there is not cuurently sybmol to process on scanner.
-    scanner->state = Start;
-    scanner->doNotWriteCurrentChar = false;
+ScannerStates processChar(scanner_t * scanner);
+void error()
+{
+    fprintf(stderr, "ERROR!!!\n");
+    exit(1);
 }
 
-void scannerFree(scanner_t * scanner) {
-    stringFree(&(scanner->tokenString));
+void scannerInit(scanner_t * scanner)
+{
+    scanner->state = Start;
+    scanner->symbol = 0;
+    scanner->endOfToken = false;
 }
 
 void tokenInit(token_t * token) {
-    token->type = init_tok;
+    token->type = tok_init;
     stringInit(&(token->textData));
 }
 
-void tokenReinit(token_t * token) {
+void tokenClean(token_t * token) {
     tokenFree(token);
     tokenInit(token);
 }
@@ -43,268 +41,421 @@ void tokenFree(token_t * token) {
     stringFree(&(token->textData));
 }
 
-token_t * readToken(scanner_t * scanner) {
-    token_t * newTok;
-    if ((newTok = malloc(sizeof(token_t))) == NULL)
-    {
-        //TODO ERROR EXIT
-        fprintf(stderr, "New tok allocation error\n");
-        exit(1);
-    }
-    while (scanner->state != EndOfTok)
-    {
-        //If there is not symbol to process in scanner, new symbol will be read from stdin.
-        if (scanner->charToProcess == '\0')
-            scanner->charToProcess = getchar();
-        scanner->state = charProcessing(scanner, newTok, scanner->charToProcess);
+token_t getToken(scanner_t * scanner) {
+    token_t token;
+    tokenInit(&token);
+    while (!scanner->endOfToken) {
+        if (scanner->symbol == 0)
+            scanner->symbol = getchar();
+        scanner->state = processChar(scanner);
         if (scanner->state == Error)
+            error();
+        switch (scanner->action)
         {
-            //TODO ERROR EXIT
-            fprintf(stderr, "Lexical errror\n");
-            exit(1);
+            case SKIP:
+                scanner->symbol = 0;
+                break;
+            case WRITE:
+                stringAppend(&token.textData, scanner->symbol);
+                scanner->symbol = 0;
+                break;
+            case CLEAN:
+                tokenClean(&token);
+                scanner->symbol = 0;
+                break;
+            default:
+                break;
         }
-        //If we are not going to process symbol which is currently in scanner again, we will append him to tokenString and remove him from scanner.
-        if (!scanner->doNotWriteCurrentChar)
-        {
-            stringAppend(&(scanner->tokenString), scanner->charToProcess);
-            scanner->charToProcess = '\0';
-        }
-        scanner->doNotWriteCurrentChar = false;
     }
-    finishToken(scanner, newTok);
-    scanner->state = Start;
-    stringClear(&(scanner->tokenString));
-    return newTok;
-}
-
-void finishToken(scanner_t * scanner, token_t * token)
-{
-    //Data will be added to token based on token type.
-    switch (token->type) {
-        case id_tok:
-            stringCopy(&(token->textData), &(scanner->tokenString));
+    switch (scanner->state)
+    {
+        case Num:
+            token.type = INT;
+            token.numericData.ivalue = atoll(token.textData.str);
             break;
-        case var_tok:
-            stringCopy(&(token->textData), &(scanner->tokenString));
+        case Float:
+            token.type = FLOAT;
+            token.numericData.fvalue = atof(token.textData.str);
             break;
-        case int_tok:
-            token->numericData.ivalue = atoi(scanner->tokenString.str);
+        case PhpEnd:
+            token.type = PHP_END;
             break;
-        case float_tok:
-            token->numericData.fvalue = atof(scanner->tokenString.str);
+        case PhpStart:
+            token.type = PHP_START;
             break;
-        case string_tok:
-            stringCopy(&(token->textData), &(scanner->tokenString));
+        case Oper:
+            token.type = OPER;
             break;
-        case brack_tok:
-            token->numericData.ivalue = scanner->tokenString.str[0] == '(' ? 0 : 1;
+        case Assig:
+            token.type = ASSIG;
             break;
-        case c_brack_tok:
-            token->numericData.ivalue = scanner->tokenString.str[0] == '{' ? 0 : 1;
-            break;   
-        case oper_tok:
-            stringCopy(&(token->textData), &(scanner->tokenString));
+        case Var:
+            token.type = VAR;
+            break;
+        case StringEnd:
+            token.type = STRING;
+            break;
+        case End:
+            token.type = END;
+            break;
+        case Colon:
+            token.type = COLON;
+            break;
+        case Semicolon:
+            token.type = SEMICOLON;
+            break;
+        case Comma:
+            token.type = COMMA;
+            break;
+        case Bracket:
+            token.type = BRACK;
+            token.numericData.ivalue = *stringRead(&token.textData) == '(' ? 0 : 1;
+            break;
+        case CBracket:
+            token.type = CBRACK;
+            token.numericData.ivalue = *stringRead(&token.textData) == '{' ? 0 : 1;
+            break;
+        case ID:
+            token.type = IDEN;
             break;
         default:
-            break;
+            error();
     }
+    scanner->endOfToken = false;
+    scanner->state = Start;
+    return token;
 }
 
-FSMSTate charProcessing(scanner_t * scan, token_t * tok, int ch)
-{
-    switch (scan->state)
+ScannerStates processChar(scanner_t * scanner) {
+    int c = scanner->symbol;
+    switch (scanner->state)
     {
         case Start:
-            if (isdigit(ch)) {
-                tok->type = int_tok;
+            if (isdigit(c)) {
+                scanner->action = WRITE;
                 return Num;
             }
-            if (ch == '"') {
-                tok->type = string_tok;
-                return StringStart;
+            if (c == '?')
+            {
+                scanner->action = SKIP;
+                return Question;
             }
-            if (ch == '$') {
-                tok->type = var_tok;
-                return VarStart;
+            if (c == '<')
+            {
+                scanner->action = WRITE;
+                return Less;
             }
-            if (isalpha(ch) || ch == '_') {
-                tok->type = id_tok;
-                return Identifier;
+            if (c == '>')
+            {
+                scanner->action = WRITE;
+                return More;
             }
-            if (ch == ':') {
-                tok->type = colon_tok;
-                return Colon;
+            if (c == '*' || c == '-' || c == '+' || c == '.') 
+            {
+                scanner->action = WRITE;
+                scanner->endOfToken = true;
+                return Oper;
             }
-            if (ch == ';') {
-                tok->type = semicolon_tok;
-                return Semicolon;
-            }
-            if (ch == ',') {
-                tok->type = comma_tok;
-                return Comma;
-            }
-            if (ch == '=') {
-                tok->type = assig_tok;
-                return Assig;
-            }
-            if (ch == '!') {
-                tok->type = oper_tok;
-                return OperInter3;
-            }
-            if (ch == '<' || ch == '>') {
-                tok->type = oper_tok;
-                return OperInter2;
-            }
-            if (ch == '*' || ch == '-' || ch == '+' || ch == '.') {
-                tok->type = oper_tok;
-                return Operator;
-            }
-            if (ch == '{' || ch == '}') {
-                tok->type = c_brack_tok;
-                return CBrack;
-            }
-            if (ch == '(' || ch == ')') {
-                tok->type = brack_tok;
-                return Brack;
-            }
-            //'/' can be operator or the beginning of comment, so type of token will be defined lately.
-            if (ch == '/') {
+            if (c == '/')
+            {
+                scanner->action = WRITE;
                 return Slash;
             }
-            //We will ignore all white sybmols.
-            if (isspace(ch)) {
-                //Setting doNotWriteCurrentChar on true and assignment '\0' to charToProcess means that the symbol will not be appended at tokenString,
-                //and also will not be processed again. So the symbol will be skipped.
-                scan->doNotWriteCurrentChar = true;
-                scan->charToProcess = '\0';
-                return Start;
-            }
-            if (ch == EOF)
+            if (c == '!')
             {
-                tok->type = eof_tok;
-                scan->doNotWriteCurrentChar = true;
-                return EndOfTok;
+                scanner->action = WRITE;
+                return OperInter1;
+            }
+            if (c == '=')
+            {
+                scanner->action = WRITE;
+                return Assig;
+            }
+            if (c == '$')
+            {
+                scanner->action = SKIP;
+                return VarStart;
+            }
+            if (c == '"')
+            {
+                scanner->action = SKIP;
+                return String;
+            }
+            if (c == EOF)
+            {
+                scanner->action = SKIP;
+                scanner->endOfToken = true;
+                return End;
+            }
+            if (c == ':')
+            {
+                scanner->action = SKIP;
+                scanner->endOfToken = true;
+                return Colon;
+            }
+            if (c == ';')
+            {
+                scanner->action = SKIP;
+                scanner->endOfToken = true;
+                return Semicolon;
+            }
+            if (c == ',')
+            {
+                scanner->action = SKIP;
+                scanner->endOfToken = true;
+                return Comma;
+            }
+            if (c == '(' || c == ')')
+            {
+                scanner->action = WRITE;
+                scanner->endOfToken = true;
+                return Bracket;
+            }
+            if (c == '{' || c == '}')
+            {
+                scanner->action = WRITE;
+                scanner->endOfToken = true;
+                return CBracket;
+            }
+            if (isalpha(c) || c == '_')
+            {
+                scanner->action = WRITE;
+                return ID;
+            }
+            if (isspace(c))
+            {
+                scanner->action = SKIP;
+                return Start;
             }
             return Error;
         case Num:
-            if (isdigit(ch))
+            if (isdigit(c))
+            {
+                scanner->action = WRITE;
                 return Num;
-            if (ch == '.') {
-                tok->type = float_tok;
-                return FloatDot;
             }
-            if (ch == 'e' || ch == 'E') {
-                tok->type = float_tok;
-                return FloatE;
+            if (c == '.')
+            {
+                scanner ->action = WRITE;
+                return FloatInter1;
             }
-            scan->doNotWriteCurrentChar = true;
-            return EndOfTok;
-        case FloatE:
-            if (isdigit(ch))
+            if (c == 'e' || c == 'E')
+            {
+                scanner->action = WRITE;
+                return FloatInter2;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Num;
+        case FloatInter1:
+            if (isdigit(c))
+            {
+                scanner->action = WRITE;
                 return Float;
-            if (ch == '+' || ch == '-')
-                return FloatDot;
+            }
             return Error;
-        case FloatDot:
-            if (isdigit(ch))
+        case FloatInter2:
+            if (c == '+' || c == '-')
+            {
+                scanner->action = WRITE;
+                return FloatInter1;
+            }
+            if (isdigit(c))
+            {
+                scanner->action = WRITE;
                 return Float;
+            }
             return Error;
         case Float:
-            if (isdigit(ch))
-                return Float;
-            scan->doNotWriteCurrentChar = true;
-            return EndOfTok;
-        case StringStart:
-            if (ch != '/' && ch != '"')
-                return StringStart;
-            if (ch == '/')
-                return EsqSeq;
-            if (ch == '"')
-                return EndOfTok;
-            return Error;
-        case EsqSeq:
-            return StringStart;
-        case StringEnd:
-            scan->doNotWriteCurrentChar = true;
-            return EndOfTok;
-        case VarStart:
-            if (isalpha(ch) || ch == '_')
-                return VarName;
-            return Error;
-        case VarName:
-            if (isalnum(ch) || ch == '_')
-                return VarName;
-            scan->doNotWriteCurrentChar = true;
-            return EndOfTok;
-        case Identifier:
-            if (isalnum(ch) || ch == '_')
-                return Identifier;
-            scan->doNotWriteCurrentChar = true;
-            return EndOfTok;
-        case Assig:
-            if (ch == '=')
-                return OperInter1;
-            scan->doNotWriteCurrentChar = true;
-            return EndOfTok;
-        case OperInter1:
-            if (ch == '=')
+            if (isdigit(c))
             {
-                tok->type = oper_tok;
-                return Operator;
+                scanner->action = WRITE;
+                return Float;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Float;
+        case Question:
+            if (c == '>')
+            {
+                scanner->action = SKIP;
+                scanner->endOfToken = true;
+                return PhpEnd;
+            }
+            return Error;
+        case Less:
+            if (c == '?')
+            {
+                scanner->action = SKIP;
+                return LQ;
+            }
+            if (c == '=')
+            {
+                scanner->action = WRITE;
+                scanner->endOfToken = true;
+                return Oper;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Oper;
+        case More:
+            if (c == '=')
+            {
+                scanner->action = WRITE;
+                scanner->endOfToken = true;
+                return Oper;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Oper;
+        case LQ:
+            if (c == 'p')
+            {
+                scanner->action = SKIP;
+                return P;
+            }
+            return Error;
+        case P:
+            if (c == 'h')
+            {
+                scanner->action = SKIP;
+                return PH;
+            }
+            return Error;
+        case PH:
+            if (c == 'p')
+            {
+                scanner->action = SKIP;
+                scanner->endOfToken = true;
+                return PhpStart;
+            }
+            return Error;
+        case Slash:
+            if (c == '*')
+            {
+                scanner->action = CLEAN;
+                return BlockCom;
+            }
+            if (c == '/')
+            {
+                scanner->action = CLEAN;
+                return Comment;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Oper;
+        case Comment:
+            if (c == '\n')
+            {
+                scanner->action = SKIP;
+                return Start;
+            }
+            if (c == EOF)
+            {
+                scanner->action = NEXT;
+                return Start;
+            }
+            scanner->action = SKIP;
+            return Comment;
+        case BlockCom:
+            if (c == '*')
+            {
+                scanner->action = SKIP;
+                return BCInter;
+            }
+            if (c != EOF)
+            {
+                scanner->action = SKIP;
+                return BlockCom;
+            }
+            return Error;
+        case BCInter:
+            if (c == '/')
+            {
+                scanner->action = SKIP;
+                return Start;
+            }
+            if (c != EOF)
+            {
+                scanner->action = SKIP;
+                return BlockCom;
+            }
+            return Error;
+        case OperInter1:
+            if (c == '=')
+            {
+                scanner->action = WRITE;
+                return OperInter2;
             }
             return Error;
         case OperInter2:
-            if (ch == '=')
-                return Operator;
-            scan->doNotWriteCurrentChar = true;
-            return Operator;
-        case OperInter3:
-            if (ch == '=')
-                return OperInter1;
+            if (c == '=')
+            {
+                scanner->action = WRITE;
+                scanner->endOfToken = true;
+                return Oper;
+            }
             return Error;
-        /* case Slash:
-            if (ch == '/')
-                return LineCom;
-            if (ch == '*')
+        case Assig:
+            if (c == '=')
             {
-                tok->type = LineCom;
-                return BlockCom;
+                scanner->action = WRITE;
+                return OperInter2;
             }
-            tok->type = oper_tok;
-            scan->doNotWriteCurrentChar = true;
-            return Operator;
-        case LineCom:
-            if (ch == '\n') {
-                //After comment end the whole tokenString will be erased and scanner will be returned to it's initial state.
-                scan->doNotWriteCurrentChar = true;
-                scan->charToProcess = '\0';
-                stringClear(&(scan->tokenString));
-                return Start;
-            }
-            if (ch == EOF)
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Assig;
+        case VarStart:
+            if (isalpha(c) || c == '_')
             {
-                tok->type = eof_tok;
-                scan->doNotWriteCurrentChar;
-                return EndOfTok;
+                scanner->action = WRITE;
+                return Var;
             }
-            return LineCom; */
-        case BlockCom:
-            if (ch == '*')
-                return BlockComEnd;
-            //Block comment must be closed before the program's text end.
-            if (ch == EOF)
-                return Error;
-            return BlockCom;
-        case BlockComEnd:
-            if (ch == '/') {
-                stringClear(&(scan->tokenString));
-                return Start;
+            return Error;
+        case Var:
+            if (isalnum(c) || c == '_')
+            {
+                scanner->action = WRITE;
+                return Var;
             }
-            if (ch == EOF)
-                return Error;
-            return BlockCom;
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Var;
+        case String:
+            if (c == '\\')
+            {
+                scanner->action = WRITE;
+                return EsqSeq;
+            }
+            if (c == '"')
+            {
+                scanner->action = SKIP;
+                scanner->endOfToken = true;
+                return StringEnd;
+            }
+            if (c != EOF)
+            {
+                scanner->action = WRITE;
+                return String;
+            }
+            return Error;
+        case EsqSeq:
+            if (c != EOF)
+            {
+                scanner->action = WRITE;
+                return String;
+            }
+            return Error;
+        case ID:
+            if (isalnum(c) || c == '_')
+            {
+                scanner->action = WRITE;
+                return ID;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return ID;
         default:
-            scan->doNotWriteCurrentChar = true;
-            return EndOfTok;
+            return Error;
     }
 }

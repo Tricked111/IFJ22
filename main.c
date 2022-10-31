@@ -18,60 +18,77 @@
 void printToken(token_t tok)
 {
     switch (tok.type) {
-        case id_tok:
-            printf("[id: %s]\n", stringRead(&(tok.textData)));
-            break;
-        case var_tok:
-            printf("[var: %s]\n", stringRead(&(tok.textData)));
-            break;
-        case int_tok:
-            printf("[int: %d]\n", tok.numericData.ivalue);
-            break;
-        case float_tok:
+        case FLOAT:
             printf("[float: %f]\n", tok.numericData.fvalue);
             break;
-        case string_tok:
-            printf("[string: %s]\n", stringRead(&(tok.textData)));
+        case INT:
+            printf("[int: %lld]\n", tok.numericData.ivalue);
             break;
-        case brack_tok:
-            printf("[brack: %d]\n", tok.numericData.ivalue);
+        case PHP_END:
+            printf("[php_end: ]\n");
             break;
-        case c_brack_tok:
-            printf("[cbrack: %d]\n", tok.numericData.ivalue);
+        case PHP_START:
+            printf("[php_start: ]\n");
             break;
-        case oper_tok:
+        case OPER:
             printf("[oper: %s]\n", stringRead(&(tok.textData)));
             break;
-        case comma_tok:
-            printf("[comma: ]\n");
-            break;
-        case semicolon_tok:
-            printf("[semicolon: ]\n");
-            break;
-        case colon_tok:
-            printf("[colon: ]\n");
-            break;
-        case assig_tok:
+        case ASSIG:
             printf("[assig: ]\n");
             break;
-        case eof_tok:
-            printf("[eof: ]\n");
+        case VAR:
+            printf("[var: %s]\n", stringRead(&(tok.textData)));
+            break;
+        case STRING:
+            printf("[string: %s]\n", stringRead(&(tok.textData)));
+            break;
+        case END:
+            printf("[end: ]\n");
+            break;
+        case COLON:
+            printf("[colon: ]\n");
+            break;
+        case SEMICOLON:
+            printf("[semicolon: ]\n");
+            break;
+        case COMMA:
+            printf("[comma: ]\n");
+            break;
+        case BRACK:
+            printf("[brack: %lld]\n", tok.numericData.ivalue);
+            break;
+        case CBRACK:
+            printf("[cbrack: %lld]\n", tok.numericData.ivalue);
+            break;
+        case IDEN:
+            printf("[id: %s]\n", stringRead(&(tok.textData)));
             break;
         default:
+            printf("error\n");
             break;
     }
+}
+
+token_t tokRet()
+{
+    token_t tok;
+    tokenInit(&tok);
+    tok.type = END;
+    return tok;
 }
 
 int main()
 {
     scanner_t scan;
     scannerInit(&scan);
-    TokenType lastTok = init_tok;
-    while (lastTok != eof_tok)
+    TokenType lastTok = tok_init;
+    while (lastTok != END && lastTok != PHP_END)
     {
-        token_t * tok = readToken(&scan);
-        lastTok = tok->type;
-        printToken(*tok);
+        token_t token = getToken(&scan);
+        //token_t token = tokRet();
+        lastTok = token.type;
+        printToken(token);
+        tokenFree(&token);
     }
     return 0;
 }
