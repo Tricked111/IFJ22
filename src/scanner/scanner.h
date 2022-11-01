@@ -75,10 +75,10 @@ typedef enum {
 
 //Types of action on processed symbol.
 typedef enum {
-    WRITE,
-    SKIP,
-    NEXT,
-    CLEAN
+    WRITE,  //Symbol will be added to the end of token string
+    SKIP,   //Symbol will be skipped
+    NEXT,   //Symbol is a part of next token, so it will be processed again
+    CLEAN   //All read symbols are not parts token, so the token string will be cleaned, symbol will be skipped
 } ScannerActions;
 
 //Lexical unit of program.
