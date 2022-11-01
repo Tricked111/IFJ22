@@ -55,7 +55,7 @@ typedef enum {
 
 //Types of tokens.
 typedef enum {
-    tok_init,
+    tok_init,   //Default value of new inicialized token, does not denote any real type of token.
     FLOAT,
     INT,
     PHP_END,
@@ -73,6 +73,7 @@ typedef enum {
     VAR
 } TokenType;
 
+//Types of action on processed symbol.
 typedef enum {
     WRITE,
     SKIP,
@@ -80,7 +81,7 @@ typedef enum {
     CLEAN
 } ScannerActions;
 
-
+//Lexical unit of program.
 typedef struct Token {
     TokenType type;
     union TokenData {
@@ -91,10 +92,10 @@ typedef struct Token {
 } token_t;
 
 typedef struct Scanner {
-    int symbol;
-    ScannerActions action;
-    ScannerStates state;
-    bool endOfToken;
+    int symbol;                 //Processed symbol.
+    ScannerActions action;      //Denote an action on symbol.
+    ScannerStates state;        //Actual state of scanner.
+    bool endOfToken;            //Indicates whether we have reached the end of token.
 } scanner_t;
 
 void scannerInit(scanner_t * scanner);
