@@ -16,84 +16,96 @@
 #include <stdbool.h>
 
 //States of scanner FSM.
-typedef enum FsmState{
+typedef enum {
     Start,
     Num,
-    FloatDot,
-    FloatE,
+    FloatInter1,
+    FloatInter2,
     Float,
-    StringStart,
+    Question,
+    PhpEnd,
+    Less,
+    LQ,
+    P,
+    PH,
+    PhpStart,
+    More,
+    Slash,
+    Comment,
+    BlockCom,
+    BCInter,
+    Oper,
+    OperInter1,
+    OperInter2,
+    ID,
+    Assig,
+    CBracket,
+    Bracket,
+    Comma,
+    Semicolon,
+    Colon,
+    End,
+    String,
     EsqSeq,
     StringEnd,
     VarStart,
-    VarName,
-    Identifier,
-    Colon,
-    Semicolon,
-    Comma,
-    Brack,
-    CBrack,
-    Operator,
-    Assig,
-    OperInter1,
-    OperInter2,
-    OperInter3,
-    Slash,
-    LineCom,
-    BlockCom,
-    BlockComEnd,
-    Error,
-    EndOfTok,
-    EndOfFile
-} FSMSTate;
+    Var,
+    Error
+} ScannerStates;
 
 //Types of tokens.
-typedef enum TOKENtype{
-    init_tok,
-    id_tok,
-    var_tok,
-    int_tok,
-    float_tok, 
-    string_tok,
-    brack_tok,
-    c_brack_tok,
-    oper_tok,
-    comma_tok,
-    semicolon_tok,
-    colon_tok,
-    assig_tok,
-    eof_tok
+typedef enum {
+    tok_init,   //Default value of new inicialized token, does not denote any real type of token.
+    FLOAT,
+    INT,
+    PHP_END,
+    PHP_START,
+    OPER, 
+    ASSIG,
+    IDEN,
+    CBRACK,
+    BRACK,
+    COMMA,
+    SEMICOLON,
+    COLON,
+    END,
+    STRING,
+    VAR
 } TokenType;
 
+//Types of action on processed symbol.
+typedef enum {
+    WRITE,  //Symbol will be added to the end of token string
+    SKIP,   //Symbol will be skipped
+    NEXT,   //Symbol is a part of next token, so it will be processed again
+    CLEAN   //All read symbols are not parts token, so the token string will be cleaned, symbol will be skipped
+} ScannerActions;
 
+//Lexical unit of program.
 typedef struct Token {
     TokenType type;
     union TokenData {
-        int ivalue;
+        long long ivalue;
         float fvalue; 
     } numericData;
     string_t textData;
 } token_t;
 
 typedef struct Scanner {
-    int charToProcess;             //Char which is currently processed.
-    string_t tokenString;
-    FSMSTate state;
-    bool doNotWriteCurrentChar;     //If true, charToProcess will not be appended at the end of tokenString.
-                                    //It is useful if we read the first symbol of next token.
+    int symbol;                 //Processed symbol.
+    ScannerActions action;      //Denote an action on symbol.
+    ScannerStates state;        //Actual state of scanner.
+    bool endOfToken;            //Indicates whether we have reached the end of token.
 } scanner_t;
 
-//Initiates scanner on scanner address.
 void scannerInit(scanner_t * scanner);
-//Free scanner on scanner address.
-void scannerFree(scanner_t * scanner);
 //Initiates token on token address.
 void tokenInit(token_t * token);
 //Returns token on token address to it's initial state.
-void tokenReinit(token_t * token);
+void tokenClean(token_t * token);
 //Free token on token address.
 void tokenFree(token_t * token);
 //Reads next token from stdin with scanner on scanner address and returns pointer to new token.
-token_t * readToken(scanner_t * scanner);
+token_t getToken(scanner_t * scanner);
 
 #endif
