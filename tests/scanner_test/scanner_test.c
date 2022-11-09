@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "scanner.h"
-#include "ifj_string.h"
+#include "ifj_strig.h"
 
 void printToken(token_t tok)
 {
