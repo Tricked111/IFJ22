@@ -50,6 +50,7 @@ typedef enum {
     StringEnd,
     VarStart,
     Var,
+    OperMinus,
     Error
 } ScannerStates;
 
@@ -70,7 +71,8 @@ typedef enum {
     COLON,
     END,
     STRING,
-    VAR
+    VAR,
+    QUEST
 } TokenType;
 
 //Types of action on processed symbol.

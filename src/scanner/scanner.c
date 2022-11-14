@@ -83,10 +83,14 @@ ScannerStates processChar(scanner_t * scanner) {
                 scanner->action = WRITE;
                 return More;
             }
-            if (c == '*' || c == '-' || c == '+' || c == '.') {
+            if (c == '*' || c == '+' || c == '.') {
                 scanner->action = WRITE;
                 scanner->endOfToken = true;
                 return Oper;
+            }
+            if (c == '-') {
+                scanner->action = WRITE;
+                return OperMinus;
             }
             if (c == '/') {
                 scanner->action = WRITE;
@@ -193,7 +197,9 @@ ScannerStates processChar(scanner_t * scanner) {
                 scanner->endOfToken = true;
                 return PhpEnd;
             }
-            return Error;
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Question;
         case Less:
             if (c == '?') {
                 scanner->action = SKIP;
@@ -291,6 +297,18 @@ ScannerStates processChar(scanner_t * scanner) {
                 return Oper;
             }
             return Error;
+        case OperMinus:
+            if (isdigit(c)) {
+                scanner->action = WRITE;
+                return Num;
+            }
+            if (isspace(c)) {
+                scanner->action = SKIP;
+                return OperMinus;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Oper;
         case Assig:
             if (c == '=') {
                 scanner->action = WRITE;
@@ -416,6 +434,9 @@ void finishToken(scanner_t * scanner, token_t * token) {
             break;
         case ID:
             token->type = IDEN;
+            break;
+        case Question:
+            token->type = QUEST;
             break;
         default:
             error();

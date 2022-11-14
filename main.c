@@ -69,6 +69,9 @@ void printToken(token_t tok)
         case IDEN:
             printf("[id: %s]\n", stringRead(&(tok.textData)));
             break;
+        case QUEST:
+            printf("[question: ]\n");
+            break;
         default:
             printf("error\n");
             break;
