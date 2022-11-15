@@ -4,8 +4,9 @@ CFLAGS= -std=c99 -Wall -Wextra
 SCANNER=src/scanner/scanner
 PARSER=src/parser/parser
 STRING=src/str/ifj_string
+BST=src/bst/bst
 
-OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o main.o
+OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o $(BST).o main.o
 NAME=IFJ22
 
 
