@@ -1,11 +1,13 @@
 #ifndef IFJ_BST
 #define IFJ_BST
 
-typedef unsigned long hash_t;
+#include <stdint.h>
+
+typedef uint32_t key_t;
 typedef void * bstData_t;
 
 typedef struct BST {
-    hash_t key;
+    key_t key;
     bstData_t data;
     struct BST * left;
     struct BST * right;
@@ -13,8 +15,8 @@ typedef struct BST {
 
 void bstInit(bst_t ** bst);
 void bstDestroy(bst_t ** bst);
-bstData_t bstSearch(bst_t * bst, hash_t key);
-int bstInsert(bst_t ** bst, hash_t key, bstData_t data);
-hash_t hash(char *str);
+bstData_t bstSearch(bst_t * bst, key_t key);
+int bstInsert(bst_t ** bst, key_t key, bstData_t data);
+key_t get_key(const char *str);
 
 #endif

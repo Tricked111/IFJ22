@@ -14,16 +14,16 @@ void bstDestroy(bst_t ** bst) {
         *bst = NULL;
     }
 }
-bstData_t bstSearch(bst_t * bst, hash_t key) {
+bstData_t bstSearch(bst_t * bst, key_t key) {
     if (bst == NULL)
         return NULL;
     if (key > bst->key)
         return bstSearch(bst->right, key);
     if (key < bst->key)
-        return bstSearch(&bst->left, key);
+        return bstSearch(bst->left, key);
     return bst->data;
 }
-int bstInsert(bst_t ** bst, hash_t key, bstData_t data) {
+int bstInsert(bst_t ** bst, key_t key, bstData_t data) {
     if (*bst == NULL) {
         if ((*bst = malloc(sizeof(bst_t))) == NULL)
             return 1;
@@ -41,16 +41,19 @@ int bstInsert(bst_t ** bst, hash_t key, bstData_t data) {
 }
 
 
-//Source: https://stackoverflow.com/questions/7666509/hash-function-for-string
-hash_t hash(char *str)
+//Source: https://en.wikipedia.org/wiki/Jenkins_hash_function
+key_t get_key(const char *str)
 {
-    hash_t hash = 5381;
-    int c;
-    c = *str++;
-    do {
-        c = *str++;
-        hash = ((hash << 5) + hash) + c;
+    key_t hash = 0;
+    size_t i = 0;
+    while (str[i]) {
+        hash += str[i];
+        hash += hash << 10;
+        hash ^= hash >> 6;
+        i++;
     }
-    while (c);
+    hash += hash << 3;
+    hash ^= hash >> 11;
+    hash += hash << 15;
     return hash;
 }
