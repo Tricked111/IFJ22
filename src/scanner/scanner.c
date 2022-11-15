@@ -430,11 +430,25 @@ void finishToken(scanner_t * scanner, token_t * token, const grammar_t gram) {
             break;
         case Bracket:
             token->type = BRACK;
-            token->numericData.ivalue = *stringRead(&(token->textData)) == '(' ? 0 : 1;
+            if (*stringRead(&(token->textData)) == '(') {
+                token->type = BR_O;
+                token->numericData.ivalue = 0;
+            }
+            else {
+                token->type = BR_C;
+                token->numericData.ivalue = 1;
+            }
             break;
         case CBracket:
-            token->type = CBRACK;
-            token->numericData.ivalue = *stringRead(&(token->textData)) == '{' ? 0 : 1;
+            token->type = BRACK;
+            if (*stringRead(&(token->textData)) == '[') {
+                token->type = CB_O;
+                token->numericData.ivalue = 0;
+            }
+            else {
+                token->type = CB_C;
+                token->numericData.ivalue = 1;
+            }
             break;
         case ID:
             key = get_key(stringRead(&(token->textData)));

@@ -62,11 +62,17 @@ void printToken(token_t tok)
         case COMMA:
             printf("[comma: ]\n");
             break;
-        case BRACK:
-            printf("[brack: %lld]\n", tok.numericData.ivalue);
+        case BR_O:
+            printf("[oper_br,]\n");
             break;
-        case CBRACK:
-            printf("[cbrack: %lld]\n", tok.numericData.ivalue);
+        case BR_C:
+            printf("[close_br,]\n");
+            break;
+        case CB_O:
+            printf("[oper_cb,]\n");
+            break;
+        case CB_C:
+            printf("[close_cb,]\n");
             break;
         case IDEN:
             printf("[id: %s]\n", stringRead(&(tok.textData)));
