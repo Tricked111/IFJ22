@@ -12,6 +12,7 @@
 #define SCANNER_H
 
 #include "../str/ifj_string.h"
+#include "../data/data.h"
 #include <ctype.h>
 #include <stdbool.h>
 
@@ -57,22 +58,22 @@ typedef enum {
 //Types of tokens.
 typedef enum {
     tok_init,   //Default value of new inicialized token, does not denote any real type of token.
-    FLOAT,
-    INT,
-    PHP_END,
-    PHP_START,
-    OPER, 
-    ASSIG,
-    IDEN,
-    CBRACK,
-    BRACK,
-    COMMA,
-    SEMICOLON,
-    COLON,
-    END,
-    STRING,
-    VAR,
-    QUEST
+    FLOAT,      
+    INT,        
+    PHP_END,    
+    PHP_START,  
+    OPER,
+    ASSIG,      
+    IDEN,           KW,     FUN,    TYPE,
+    CBRACK,         CB_O,   CB_C,
+    BRACK,          BR_O,   BR_C,
+    COMMA,      
+    SEMICOLON,  
+    COLON,      
+    END,        
+    STRING,     
+    VAR,        
+    QUEST  
 } TokenType;
 
 //Types of action on processed symbol.
@@ -108,6 +109,8 @@ void tokenClean(token_t * token);
 //Free token on token address.
 void tokenFree(token_t * token);
 //Reads next token from stdin with scanner on scanner address and returns pointer to new token.
-token_t getToken(scanner_t * scanner);
+token_t getToken(scanner_t * scanner, const grammar_t gram);
+
+
 
 #endif

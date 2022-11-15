@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include "src/scanner/scanner.h"
 #include "src/parser/parser.h"
+#include "src/bst/bst.h"
+#include "src/data/data.h"
 
 
 /* 
@@ -37,7 +39,7 @@ void printToken(token_t tok)
             printf("[php_start: ]\n");
             break;
         case OPER:
-            printf("[oper: %s]\n", stringRead(&(tok.textData)));
+            printf("[oper: %lld]\n", tok.numericData.ivalue);
             break;
         case ASSIG:
             printf("[assig: ]\n");
@@ -69,12 +71,33 @@ void printToken(token_t tok)
         case IDEN:
             printf("[id: %s]\n", stringRead(&(tok.textData)));
             break;
+        case KW:
+            printf("[KW: %lld]\n", tok.numericData.ivalue);
+            break;
+        case TYPE:
+            printf("[type: %lld]\n", tok.numericData.ivalue);
+            break;
+        case FUN:
+            printf("[funID: %s]\n", stringRead(&(tok.textData)));
+            break;
         case QUEST:
             printf("[question: ]\n");
             break;
         default:
             printf("error\n");
             break;
+    }
+}
+
+void printTreeInt(bst_t * bst, int level) {
+    if (bst != NULL) {
+        printf("%d", *((int *)(bst->data)));
+        putchar('\t');
+        printTreeInt(bst->right, level + 1);
+        putchar('\n');
+        for (int i = 0; i < level; i++)
+            putchar('\t');
+        printTreeInt(bst->left, level + 1);
     }
 }
 
@@ -88,16 +111,22 @@ token_t tokRet()
 
 int main()
 {
+    grammar_t grammar;
+    if (grammarInit(&grammar))
+        return INTERN_ERR;
+
     scanner_t scan;
     scannerInit(&scan);
     TokenType lastTok = tok_init;
     while (lastTok != END && lastTok != PHP_END)
     {
-        token_t token = getToken(&scan);
+        token_t token = getToken(&scan, grammar);
         //token_t token = tokRet();
         lastTok = token.type;
         printToken(token);
         tokenFree(&token);
     }
+    
+    //parseProgram();
     return 0;
 }
