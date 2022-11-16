@@ -57,7 +57,6 @@ typedef enum {
 
 //Types of tokens.
 typedef enum {
-    tok_init,   //Default value of new inicialized token, does not denote any real type of token.
     FLOAT,      
     INT,        
     PHP_END,    
@@ -73,7 +72,8 @@ typedef enum {
     END,        
     STRING,     
     VAR,        
-    QUEST  
+    QUEST,
+    tok_init   //Default value of new inicialized token, does not denote any real type of token.
 } TokenType;
 
 //Types of action on processed symbol.
@@ -109,7 +109,7 @@ void tokenClean(token_t * token);
 //Free token on token address.
 void tokenFree(token_t * token);
 //Reads next token from stdin with scanner on scanner address and returns pointer to new token.
-token_t getToken(scanner_t * scanner, const grammar_t gram);
+token_t getToken(scanner_t * scanner);
 
 
 

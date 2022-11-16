@@ -2,9 +2,12 @@
 #define PARSER_IFJ22
 
 #include <stdio.h>
-#include <string.h>
+#include "../str/ifj_string.h"
+#include "../scanner/scanner.h"
+#include "../compError.h"
+#include "../str/ifj_string.h"
+#include "../bst/bst.h"
 
-
-void hello_parser();
+int parseProgram();
 
 #endif

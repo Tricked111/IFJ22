@@ -63,22 +63,22 @@ void printToken(token_t tok)
             printf("[comma: ]\n");
             break;
         case BR_O:
-            printf("[oper_br,]\n");
+            printf("[open_br: ]\n");
             break;
         case BR_C:
-            printf("[close_br,]\n");
+            printf("[close_br: ]\n");
             break;
         case CB_O:
-            printf("[oper_cb,]\n");
+            printf("[open_cb: ]\n");
             break;
         case CB_C:
-            printf("[close_cb,]\n");
+            printf("[close_cb: ]\n");
             break;
         case IDEN:
             printf("[id: %s]\n", stringRead(&(tok.textData)));
             break;
         case KW:
-            printf("[KW: %lld]\n", tok.numericData.ivalue);
+            printf("[key_word: %lld]\n", tok.numericData.ivalue);
             break;
         case TYPE:
             printf("[type: %lld]\n", tok.numericData.ivalue);
@@ -107,6 +107,26 @@ void printTreeInt(bst_t * bst, int level) {
     }
 }
 
+void printRules(bst_t * tree) {
+    if (tree == NULL)
+        return;
+
+    printf("RULE %u:\n", tree->key);
+    rule_t * rule = (rule_t *)(tree->data);
+    for (int i = 0; i < rule->variantsCount; i++) {
+        printf("\tRule variant: ");
+        ruleJoint_t * rj = rule->ruleVariants[i];
+        while (rj != NULL) {
+            printf("%d ", rj->type);
+            rj = rj->next;
+        }
+        putchar('\n');
+    }
+
+    printRules(tree->left);
+    printRules(tree->right);
+}
+
 token_t tokRet()
 {
     token_t tok;
@@ -117,16 +137,15 @@ token_t tokRet()
 
 int main()
 {
-    grammar_t grammar;
-    if (grammarInit(&grammar))
+    if (grammarInit())
         return INTERN_ERR;
-
+    
     scanner_t scan;
     scannerInit(&scan);
     TokenType lastTok = tok_init;
     while (lastTok != END && lastTok != PHP_END)
     {
-        token_t token = getToken(&scan, grammar);
+        token_t token = getToken(&scan);
         //token_t token = tokRet();
         lastTok = token.type;
         printToken(token);

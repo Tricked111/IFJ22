@@ -35,13 +35,67 @@ typedef enum {
     VOID_IND
 } TypesInd;
 
+typedef enum {
+    TOK_END,
+    TOK_START,
+    TOK_OPER,
+    TOK_OPER_MIN,
+    TOK_ASSIG,
+    TOK_FUN,
+    TOK_TYPE,
+    TOK_BRO,
+    TOK_BRC,
+    TOK_CBO,
+    TOK_CBC,
+    TOK_COL,
+    TOK_SEMICOL,
+    TOK_EOF,
+    TOK_CONST,
+    TOK_VAR,
+    TOK_QUEST,
+    TOK_ONE,
+    TOK_COMMA
+} TokenInd;
+
+typedef enum {
+    KEY_WORDS_J,
+    TYPE_J,
+    TOK_J,
+    RULE_J,
+    CONST_J
+} RuleJointType;
+
+typedef struct RuleJoint {
+    RuleJointType type;
+    union
+    {
+        KeyWordsInd kwIndex;
+        TypesInd typeIndex;
+        struct
+        {
+            TokenInd tokenType;
+            long long tokenAtribute;
+        } TokenData;
+        key_t ruleKey;
+    } RuleJointData;
+    struct RuleJoint * next;
+} ruleJoint_t;
+
+typedef struct Rule {
+    int variantsCount;
+    ruleJoint_t ** ruleVariants;
+} rule_t;
+
 typedef int * lexData_t;
 typedef struct Grammar {
     bst_t * keyWords;
     bst_t * operators;
     bst_t * types;
+    bst_t * syntaxRules;
 } grammar_t;
 
-int grammarInit(grammar_t * grammar);
+extern grammar_t grammar;
+
+int grammarInit();
 
 #endif

@@ -14,13 +14,13 @@ void bstDestroy(bst_t ** bst) {
         *bst = NULL;
     }
 }
-bstData_t bstSearch(bst_t * bst, key_t key) {
+bstData_t bstGet(bst_t * bst, key_t key) {
     if (bst == NULL)
         return NULL;
     if (key > bst->key)
-        return bstSearch(bst->right, key);
+        return bstGet(bst->right, key);
     if (key < bst->key)
-        return bstSearch(bst->left, key);
+        return bstGet(bst->left, key);
     return bst->data;
 }
 int bstInsert(bst_t ** bst, key_t key, bstData_t data) {
@@ -40,6 +40,15 @@ int bstInsert(bst_t ** bst, key_t key, bstData_t data) {
     return 1;
 }
 
+bool bstSearch(bst_t * bst, key_t key) {
+    if (bst == NULL)
+        return false;
+    if (key > bst->key)
+        return bstSearch(bst->right, key);
+    if (key < bst->key)
+        return bstSearch(bst->left, key);
+    return true;
+}
 
 //Source: https://en.wikipedia.org/wiki/Jenkins_hash_function
 key_t get_key(const char *str)

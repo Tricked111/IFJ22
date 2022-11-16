@@ -19,7 +19,7 @@ ScannerStates processChar(scanner_t * scanner);
 //Performs action with the symbol.
 void charAction(scanner_t * scanner, token_t * token);
 //Fills token structure with data.
-void finishToken(scanner_t * scanner, token_t * token, const grammar_t gram);
+void finishToken(scanner_t * scanner, token_t * token);
 
 //TEMPORARY!!!!
 void error() {
@@ -47,7 +47,7 @@ void tokenFree(token_t * token) {
     stringFree(&(token->textData));
 }
 
-token_t getToken(scanner_t * scanner, const grammar_t gram) {
+token_t getToken(scanner_t * scanner) {
     token_t token;
     tokenInit(&token);
     while (!scanner->endOfToken) {
@@ -58,7 +58,7 @@ token_t getToken(scanner_t * scanner, const grammar_t gram) {
             error();
         charAction(scanner, &token);            //Performing action on symbol.
     }
-    finishToken(scanner, &token, gram);               //Filling token structure.
+    finishToken(scanner, &token);               //Filling token structure.
     scanner->endOfToken = false;                //Scanner cleaning.
     scanner->state = Start;
     return token;
@@ -384,7 +384,7 @@ void charAction(scanner_t * scanner, token_t * token) {
     }
 }
 
-void finishToken(scanner_t * scanner, token_t * token, const grammar_t gram) {
+void finishToken(scanner_t * scanner, token_t * token) {
     key_t key;
     switch (scanner->state)
     {
@@ -405,7 +405,7 @@ void finishToken(scanner_t * scanner, token_t * token, const grammar_t gram) {
         case Oper:
             token->type = OPER;
             key = get_key(stringRead(&(token->textData)));
-            token->numericData.ivalue = *(long long *)bstSearch(gram.operators, key);
+            token->numericData.ivalue = *(long long *)bstGet(grammar.operators, key);
             break;
         case Assig:
             token->type = ASSIG;
@@ -452,13 +452,13 @@ void finishToken(scanner_t * scanner, token_t * token, const grammar_t gram) {
             break;
         case ID:
             key = get_key(stringRead(&(token->textData)));
-            void * searchResult = bstSearch(gram.keyWords, key);
+            void * searchResult = bstGet(grammar.keyWords, key);
             if (searchResult != NULL) {
                 token->type = KW;
                 token->numericData.ivalue = *(long long *)searchResult;
                 break;
             }
-            searchResult = bstSearch(gram.types, key);
+            searchResult = bstGet(grammar.types, key);
             if (searchResult != NULL) {
                 token->type = TYPE;
                 token->numericData.ivalue = *(long long *)searchResult;
