@@ -12,33 +12,37 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void stringInit(string_t * str) {
+int stringInit(string_t * str) {
     if ((str->str = malloc(sizeof(char) * (DEFAULT_STRING_LENGTH + 1))) == NULL)
-        fprintf(stderr, "String allocation failure\n");
+        return 1;
     str->len = 0;
     str->allocated = DEFAULT_STRING_LENGTH;
     str->str[0] = '\0';
+    return 0;
 }
 
 void stringFree(string_t * str) {
     free(str->str);
 }
 
-void stringAppend(string_t * str, char newChar) {
+int stringAppend(string_t * str, char newChar) {
     if (str->len == str->allocated) {
         if ((str->str = realloc(str->str, sizeof(char) * (str->allocated + DEFAULT_STRING_LENGTH + 1))) == NULL)
-            fprintf(stderr, "String allocation failure\n");
+            return 1;
         str->allocated += DEFAULT_STRING_LENGTH;
     }
     str->str[str->len] = newChar;
     str->len++;
     str->str[str->len] = '\0';
+    return 0;
 }
 
-void stringClear(string_t * str)
+int stringClear(string_t * str)
 {
     stringFree(str);
-    stringInit(str);
+    if (stringInit(str))
+        return 1;
+    return 0;
 }
 
 void stringCopy(string_t * strDest, string_t * strSource)
