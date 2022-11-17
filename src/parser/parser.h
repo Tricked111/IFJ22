@@ -8,6 +8,12 @@
 #include "../str/ifj_string.h"
 #include "../bst/bst.h"
 
+typedef struct Program {
+    int tokenCount;
+    token_t * tokens;
+} program_t;
+
 int parseProgram();
+int readPogram(program_t * program, scanner_t * scanner);
 
 #endif

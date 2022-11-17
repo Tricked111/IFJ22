@@ -85,11 +85,11 @@ typedef struct RuleJoint {
     RuleJointType type;
     union
     {
-        KeyWordsInd kwIndex;            //Key of key word in key words tree
-        TypesInd typeIndex;             //Key of type in types tree
+        KeyWordsInd kwIndex;            //Index of key word
+        TypesInd typeIndex;             //Index of type
         struct
         {
-            TokenInd tokenType;         //Index of required rule
+            TokenInd tokenType;         //Index of required token
             long long tokenAtribute;    //Required atribute of token
         } TokenData;
         key_t ruleKey;                  //Key of rule

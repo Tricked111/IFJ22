@@ -54,8 +54,10 @@ token_t getToken(scanner_t * scanner) {
         if (scanner->symbol == 0)               //If there is not any symbol to process in scanner, read new one.
             scanner->symbol = getchar();
         scanner->state = processChar(scanner);  //Processing the symbol.
-        if (scanner->state == Error)            //Lexical error handling.
-            error();
+        if (scanner->state == Error) {
+            token.type = ERROR;
+            return token;
+        }
         charAction(scanner, &token);            //Performing action on symbol.
     }
     finishToken(scanner, &token);               //Filling token structure.
@@ -441,7 +443,7 @@ void finishToken(scanner_t * scanner, token_t * token) {
             break;
         case CBracket:
             token->type = BRACK;
-            if (*stringRead(&(token->textData)) == '[') {
+            if (*stringRead(&(token->textData)) == '{') {
                 token->type = CB_O;
                 token->numericData.ivalue = 0;
             }

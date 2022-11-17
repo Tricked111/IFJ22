@@ -140,7 +140,7 @@ int main()
     if (grammarInit())
         return INTERN_ERR;
     
-    scanner_t scan;
+    /*scanner_t scan;
     scannerInit(&scan);
     TokenType lastTok = tok_init;
     while (lastTok != END && lastTok != PHP_END)
@@ -150,7 +150,10 @@ int main()
         lastTok = token.type;
         printToken(token);
         tokenFree(&token);
-    }
+    }*/
+
+    int ret = parseProgram();
+    printf("%d\n", ret);
     
     //parseProgram();
     freeGrammar();

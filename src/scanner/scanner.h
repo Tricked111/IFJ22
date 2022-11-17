@@ -73,6 +73,7 @@ typedef enum {
     STRING,     
     VAR,        
     QUEST,
+    ERROR,
     tok_init   //Default value of new inicialized token, does not denote any real type of token.
 } TokenType;
 

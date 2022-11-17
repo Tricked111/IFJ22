@@ -302,7 +302,6 @@ void tokenDefine(ruleJoint_t * ruleJoint, TokenInd ind) {
             break;
         case TOK_OPER:
             ruleJoint->RuleJointData.TokenData.tokenType = (TokenInd)OPER;
-            ruleJoint->RuleJointData.TokenData.tokenAtribute = -1;
             break;
         case TOK_OPER_MIN:
             ruleJoint->RuleJointData.TokenData.tokenType = (TokenInd)OPER;
