@@ -454,7 +454,7 @@ void finishToken(scanner_t * scanner, token_t * token) {
             key = get_key(stringRead(&(token->textData)));
             void * searchResult = bstGet(grammar.keyWords, key);
             if (searchResult != NULL) {
-                token->type = KW;
+                token->type = FUN;
                 token->numericData.ivalue = *(long long *)searchResult;
                 break;
             }
@@ -464,7 +464,7 @@ void finishToken(scanner_t * scanner, token_t * token) {
                 token->numericData.ivalue = *(long long *)searchResult;
                 break;
             }
-            token->type = FUN;
+            token->type = KW;
             break;
         case Question:
             token->type = QUEST;

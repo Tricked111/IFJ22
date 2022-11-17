@@ -78,7 +78,7 @@ void printToken(token_t tok)
             printf("[id: %s]\n", stringRead(&(tok.textData)));
             break;
         case KW:
-            printf("[key_word: %lld]\n", tok.numericData.ivalue);
+            printf("[key_word: %s]\n", tok.textData.str);
             break;
         case TYPE:
             printf("[type: %lld]\n", tok.numericData.ivalue);
@@ -137,7 +137,9 @@ token_t tokRet()
 
 int main()
 {
-    if (grammarInit())
+
+    /* parseProgram(); */
+    /* if (grammarInit())
         return INTERN_ERR;
     
     scanner_t scan;
@@ -150,8 +152,8 @@ int main()
         lastTok = token.type;
         printToken(token);
         tokenFree(&token);
-    }
+    } */
     
-    //parseProgram();
+    parseProgram();
     return 0;
 }
