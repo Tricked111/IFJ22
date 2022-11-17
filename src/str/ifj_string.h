@@ -6,7 +6,7 @@
  *      Authors: Nikita Kotvitskiy (xkotvi01)
  *      Purpose: Declaration of string structure and operations on them
  * 
- *                        Last change: 24. 10. 2022
+ *                        Last change: 16. 11. 2022
  *****************************************************************************/
 
 #ifndef IFJ_STRING_H

@@ -1,3 +1,13 @@
+/******************************************************************************
+ *                                  IFJ22
+ *                                  bst.c
+ * 
+ *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *      Purpose: Definition of operations on binary search trees
+ * 
+ *                        Last change: 16. 11. 2022
+ *****************************************************************************/
+
 #include "bst.h"
 #include <stdio.h>
 #include <stdlib.h>

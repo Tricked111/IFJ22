@@ -153,5 +153,6 @@ int main()
     }
     
     //parseProgram();
+    freeGrammar();
     return 0;
 }

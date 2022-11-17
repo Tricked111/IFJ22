@@ -1,10 +1,20 @@
+/******************************************************************************
+ *                                  IFJ22
+ *                                 data.c
+ * 
+ *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *      Purpose: Generation of grammar trees and syntax rules reading
+ * 
+ *                        Last change: 16. 11. 2022
+ *****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <stdbool.h>
 #include "data.h"
 #include "../str/ifj_string.h"
 #include "../bst/bst.h"
-#include <ctype.h>
-#include <stdbool.h>
 #include "../scanner/scanner.h"
 
 grammar_t grammar;
@@ -109,6 +119,7 @@ int addRule(bst_t ** ruleTree, string_t str);
 rule_t * getPointerToCurrentRule(bst_t *ruleTree, string_t str);
 int readRule(FILE * f, rule_t * rule, bst_t * tokTree);
 
+//Reads syntax rules from rules.txt 
 bst_t * getRuleTree() {
     bst_t * ruleTree;
     bstInit(&ruleTree);
@@ -121,22 +132,27 @@ bst_t * getRuleTree() {
     string_t str;
     if (stringInit(&str))
         return NULL;
+
     while (true) {
+        //Read name of rule
         if (readRuleStr(f, &str))
             return NULL;
+        
+        //If rule has already been described in rule tree, new variant of rule will be created
         if (ruleIsInTree(ruleTree, str)) {
             if (addRuleVariant(ruleTree, str))
                 return NULL;
         }
+        //Else, new rule will be created
         else if (addRule(&ruleTree, str))
             return NULL;
 
+        //Rule reading...
         rule_t * currentRule = getPointerToCurrentRule(ruleTree, str);
-        if (currentRule == NULL)
-            return NULL;
         if (readRule(f, currentRule, tokTree))
             return NULL;
 
+        //Rule end flag reading...
         if (readRuleStr(f, &str))
             return NULL;
         if (*stringRead(&str) == '#')
@@ -145,6 +161,7 @@ bst_t * getRuleTree() {
     if (fclose(f) == EOF)
         return NULL;
     
+    stringFree(&str);
     return ruleTree;
 }
 
@@ -166,6 +183,7 @@ bst_t * getTokTree() {
     return tree;
 }
 
+//Reads single part of rule
 int readRuleStr(FILE * f, string_t * str) {
     stringClear(str);
     int c;
@@ -182,6 +200,7 @@ int readRuleStr(FILE * f, string_t * str) {
     return 0;
 }
 
+//Checks, if rule has already been described it rule tree
 bool ruleIsInTree(bst_t * ruleTree, string_t str) {
     key_t key = get_key(stringRead(&str));
     if (bstSearch(ruleTree, key))
@@ -189,6 +208,7 @@ bool ruleIsInTree(bst_t * ruleTree, string_t str) {
     return false;
 }
 
+//Adds new variant of rule
 int addRuleVariant(bst_t * ruleTree, string_t str) {
     key_t key = get_key(stringRead(&str));
     rule_t * rule = (rule_t *)bstGet(ruleTree, key);
@@ -198,6 +218,7 @@ int addRuleVariant(bst_t * ruleTree, string_t str) {
     return 0;
 }
 
+//Adds new rule in rule tree
 int addRule(bst_t ** ruleTree, string_t str) {
     key_t key = get_key(stringRead(&str));
     rule_t * newRule = malloc(sizeof(rule_t));
@@ -212,6 +233,7 @@ int addRule(bst_t ** ruleTree, string_t str) {
     return 0;
 }
 
+//Returnes pointer to rule which is currently in process
 rule_t * getPointerToCurrentRule(bst_t *ruleTree, string_t str) {
     key_t key = get_key(stringRead(&str));
     rule_t * rule = (rule_t *)bstGet(ruleTree, key);
@@ -219,6 +241,7 @@ rule_t * getPointerToCurrentRule(bst_t *ruleTree, string_t str) {
 }
 
 void tokenDefine(ruleJoint_t * ruleJoint, TokenInd ind);
+//Reading sequence of rule parts and save them in rule structure.
 int readRule(FILE * f, rule_t * rule, bst_t * tokTree) {
     string_t word;
     if (stringInit(&word))
@@ -264,9 +287,11 @@ int readRule(FILE * f, rule_t * rule, bst_t * tokTree) {
         }
         
     }
+    stringFree(&word);
     return 0;
 }
 
+//Sets type of token rule joint based on index from token tree
 void tokenDefine(ruleJoint_t * ruleJoint, TokenInd ind) {
     switch (ind) {
         case TOK_END:
@@ -330,4 +355,11 @@ void tokenDefine(ruleJoint_t * ruleJoint, TokenInd ind) {
             ruleJoint->RuleJointData.TokenData.tokenType = (TokenInd)COMMA;
             break;
     }
+}
+
+void freeGrammar() {
+    bstDestroy(&(grammar.keyWords));
+    bstDestroy(&(grammar.operators));
+    bstDestroy(&(grammar.syntaxRules));
+    bstDestroy(&(grammar.types));
 }

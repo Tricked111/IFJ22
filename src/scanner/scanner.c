@@ -6,7 +6,7 @@
  *      Authors: Nikita Kotvitskiy (xkotvi01)
  *      Purpose: Definition of operations on scanner and token structures
  * 
- *                        Last change: 24. 10. 2022
+ *                        Last change: 16. 11. 2022
  *****************************************************************************/
 
 #include <stdio.h>
