@@ -102,16 +102,13 @@ typedef struct Scanner {
     bool endOfToken;            //Indicates whether we have reached the end of token.
 } scanner_t;
 
-void scannerInit(scanner_t * scanner);
-//Initiates token on token address.
-void tokenInit(token_t * token);
-//Returns token on token address to it's initial state.
-void tokenClean(token_t * token);
-//Free token on token address.
-void tokenFree(token_t * token);
-//Reads next token from stdin with scanner on scanner address and returns pointer to new token.
-token_t getToken(scanner_t * scanner);
+//Structure including all program tokens.
+typedef struct Program {
+    int tokenCount;
+    token_t * tokens;
+} program_t;
 
-
+//Reads program and load it's tokens into global program structure
+int readPogram(program_t * program);
 
 #endif

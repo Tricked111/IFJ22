@@ -13,13 +13,45 @@
 #include <stdlib.h>
 #include "scanner.h"
 #include "../data/data.h"
+#include "../compError.h"
 
+void scannerInit(scanner_t * scanner);
+//Initiates token on token address.
+void tokenInit(token_t * token);
+//Returns token on token address to it's initial state.
+void tokenClean(token_t * token);
+//Free token on token address.
+void tokenFree(token_t * token);
+//Reads next token from stdin with scanner on scanner address and returns pointer to new token.
+token_t getToken(scanner_t * scanner);
 //Processes symbol in scanner->symbol, defines new scanner state and decides, which type of action should be performed with the symbol.
 ScannerStates processChar(scanner_t * scanner);
 //Performs action with the symbol.
 void charAction(scanner_t * scanner, token_t * token);
 //Fills token structure with data.
 void finishToken(scanner_t * scanner, token_t * token);
+
+int readPogram(program_t * program) {
+    scanner_t scanner;
+    scannerInit(&scanner);
+
+    program->tokenCount = 0;
+    if ((program->tokens = malloc(0)) == NULL)
+        return INTERN_ERR;
+    TokenType tokType;
+    token_t token;
+    do {
+        token = getToken(&scanner);
+        tokType = token.type;
+        program->tokenCount++;
+        if ((program->tokens = realloc(program->tokens, sizeof(token_t) * program->tokenCount)) == NULL)
+            return INTERN_ERR;
+        program->tokens[program->tokenCount - 1] = token;
+        if (token.type == ERROR)
+            return LEXICAL_ERR;
+    } while (tokType != END && tokType != PHP_END);
+    return 0;
+}
 
 //TEMPORARY!!!!
 void error() {
