@@ -13,13 +13,45 @@
 #include <stdlib.h>
 #include "scanner.h"
 #include "../data/data.h"
+#include "../compError.h"
 
+void scannerInit(scanner_t * scanner);
+//Initiates token on token address.
+void tokenInit(token_t * token);
+//Returns token on token address to it's initial state.
+void tokenClean(token_t * token);
+//Free token on token address.
+void tokenFree(token_t * token);
+//Reads next token from stdin with scanner on scanner address and returns pointer to new token.
+token_t getToken(scanner_t * scanner);
 //Processes symbol in scanner->symbol, defines new scanner state and decides, which type of action should be performed with the symbol.
 ScannerStates processChar(scanner_t * scanner);
 //Performs action with the symbol.
 void charAction(scanner_t * scanner, token_t * token);
 //Fills token structure with data.
 void finishToken(scanner_t * scanner, token_t * token);
+
+int readPogram(program_t * program) {
+    scanner_t scanner;
+    scannerInit(&scanner);
+
+    program->tokenCount = 0;
+    if ((program->tokens = malloc(0)) == NULL)
+        return INTERN_ERR;
+    TokenType tokType;
+    token_t token;
+    do {
+        token = getToken(&scanner);
+        tokType = token.type;
+        program->tokenCount++;
+        if ((program->tokens = realloc(program->tokens, sizeof(token_t) * program->tokenCount)) == NULL)
+            return INTERN_ERR;
+        program->tokens[program->tokenCount - 1] = token;
+        if (token.type == ERROR)
+            return LEXICAL_ERR;
+    } while (tokType != END && tokType != PHP_END);
+    return 0;
+}
 
 //TEMPORARY!!!!
 void error() {
@@ -86,14 +118,10 @@ ScannerStates processChar(scanner_t * scanner) {
                 scanner->action = WRITE;
                 return More;
             }
-            if (c == '*' || c == '+' || c == '.') {
+            if (c == '*' || c == '+' || c == '.' || c == '-') {
                 scanner->action = WRITE;
                 scanner->endOfToken = true;
                 return Oper;
-            }
-            if (c == '-') {
-                scanner->action = WRITE;
-                return OperMinus;
             }
             if (c == '/') {
                 scanner->action = WRITE;
@@ -173,27 +201,45 @@ ScannerStates processChar(scanner_t * scanner) {
         case FloatInter1:
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float1;
             }
             return Error;
         case FloatInter2:
             if (c == '+' || c == '-') {
                 scanner->action = WRITE;
-                return FloatInter1;
+                return FloatInter3;
             }
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float2;
             }
             return Error;
-        case Float:
+        case FloatInter3:
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float2;
+            }
+            return Error;
+        case Float1:
+            if (isdigit(c)) {
+                scanner->action = WRITE;
+                return Float1;
+            }
+            if (c == 'e' || c == 'E') {
+                scanner->action = WRITE;
+                return FloatInter2;
             }
             scanner->action = NEXT;
             scanner->endOfToken = true;
-            return Float;
+            return Float1;
+        case Float2:
+            if (isdigit(c)) {
+                scanner->action = WRITE;
+                return Float1;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Float2;
         case Question:
             if (c == '>') {
                 scanner->action = SKIP;
@@ -300,18 +346,6 @@ ScannerStates processChar(scanner_t * scanner) {
                 return Oper;
             }
             return Error;
-        case OperMinus:
-            if (isdigit(c)) {
-                scanner->action = WRITE;
-                return Num;
-            }
-            if (isspace(c)) {
-                scanner->action = SKIP;
-                return OperMinus;
-            }
-            scanner->action = NEXT;
-            scanner->endOfToken = true;
-            return Oper;
         case Assig:
             if (c == '=') {
                 scanner->action = WRITE;
@@ -394,7 +428,11 @@ void finishToken(scanner_t * scanner, token_t * token) {
             token->type = INT;
             token->numericData.ivalue = atoll(token->textData.str);
             break;
-        case Float:
+        case Float1:
+            token->type = FLOAT;
+            token->numericData.fvalue = atof(token->textData.str);
+            break;
+        case Float2:
             token->type = FLOAT;
             token->numericData.fvalue = atof(token->textData.str);
             break;

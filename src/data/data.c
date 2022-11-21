@@ -16,6 +16,7 @@
 #include "../str/ifj_string.h"
 #include "../bst/bst.h"
 #include "../scanner/scanner.h"
+#include "../compError.h"
 
 grammar_t grammar;
 bst_t * getKeyWordTree();
@@ -274,11 +275,14 @@ int readRule(FILE * f, rule_t * rule, bst_t * tokTree) {
         }
         else if (bstSearch(grammar.keyWords, key)) {
             newJoint->type = KEY_WORDS_J;
-            newJoint->RuleJointData.ruleKey = key;
+            KeyWordsInd kwInd = *(KeyWordsInd *)bstGet(grammar.keyWords, key);
+            newJoint->RuleJointData.kwIndex = kwInd;
         }
         else if (bstSearch(tokTree, key)) {
             newJoint->type = TOK_J;
+            newJoint->RuleJointData.TokenData.tokenAtribute = -1;
             tokenDefine(newJoint, *(TokenInd *)bstGet(tokTree, key));
+
         }
         else
         {

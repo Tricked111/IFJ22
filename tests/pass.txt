@@ -1,4 +1,11 @@
 <?php
 declare(strict_types=1);
-if(1===1){}else{}
-+ - * / > < >= <= === !== .
+if ($a) {
+    while ($b) {
+        if ($c) {
+            printf($a, $b, $c, -2);
+        }
+        else {}
+    }
+}
+else {}

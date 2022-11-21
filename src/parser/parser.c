@@ -4,91 +4,80 @@
 #include "parser.h"
 #include "../data/data.h"
 
-bool ruleProcess(rule_t * rule, int tokIndex, const program_t * program);
-bool checRulePart(ruleJoint_t * part, const program_t * program, int tokIndex);
-bool checkVariant(ruleJoint_t * rule, const program_t * program, int firstTokIndex);
-bool ruleProcess(rule_t * rule, int tokIndex, const program_t * program);
+bool ruleProcess(rule_t * rule, int * cursor, const program_t * program);
+bool checkRuleVariant(ruleJoint_t * rule, int * cursor, const program_t * program);
+bool checkRulePart(ruleJoint_t * rule, int * cursor, const program_t * program);
 
-int readPogram(program_t * program, scanner_t * scanner) {
-    program->tokenCount = 0;
-    if ((program->tokens = malloc(0)) == NULL)
-        return INTERN_ERR;
-    TokenType tokType;
-    token_t token;
-    do {
-        token = getToken(scanner);
-        tokType = token.type;
-        program->tokenCount++;
-        if ((program->tokens = realloc(program->tokens, sizeof(token_t) * program->tokenCount)))
-            return INTERN_ERR;
-        program->tokens[program->tokenCount - 1] = token;
-        if (token.type == ERROR)
-            return LEXICAL_ERR;
-    } while (tokType != END && tokType != PHP_END);
-    return 0;
-}
+#define DEBUGGING false //TEMPORARY
 
-int parseProgram() {
-    scanner_t scanner;
-    scannerInit(&scanner);
-    program_t program;
-    
-    int programReaderReturn = readPogram(&program, &scanner);
-    if (programReaderReturn)
-        return programReaderReturn;
 
-    rule_t * rule = (rule_t *)grammar.syntaxRules->data;
-    if (ruleProcess(rule, 0, &program))
+int parseProgram(const program_t * program) {
+    rule_t * firstRule = (rule_t *)grammar.syntaxRules->data;
+    int cursor = 0;
+    if (!ruleProcess(firstRule, &cursor, program))
         return SYNTAX_ERR;
     return 0;
 }
 
+bool ruleProcess(rule_t * rule, int * cursor, const program_t * program) {
+    if (DEBUGGING) printf("=============\nStart rule processing...\n");
+    if (DEBUGGING) printf("Rule has %d variants\n", rule->variantsCount);
 
-bool ruleProcess(rule_t * rule, int tokIndex, const program_t * program) {
-    bool observed = false;
-    for (int i = 0; i < rule->variantsCount; i++)
-        if (checkVariant(rule->ruleVariants[i], program, tokIndex))
-            observed = true;
-    if (observed)
-        return true;
+
+    for (int i = 0; i < rule->variantsCount; i++) {
+        if (DEBUGGING) printf("Trying %d variant...\n  ", i);
+        if (checkRuleVariant(rule->ruleVariants[i], cursor, program))
+            return true;
+    }
+    if (DEBUGGING) printf("All variants are incorrect\n");
     return false;
 }
 
-bool checkVariant(ruleJoint_t * rule, const program_t * program, int firstTokIndex) {
+bool checkRuleVariant(ruleJoint_t * rule, int * cursor, const program_t * program) {
+    int localCursor = * cursor;
     do {
-        if (!checRulePart(rule, program, firstTokIndex))
+        if (!checkRulePart(rule, &localCursor, program))
             return false;
+        localCursor++;
         rule = rule->next;
-        firstTokIndex++;
     } while (rule != NULL);
+    *cursor = localCursor - 1;
+    if (DEBUGGING) printf("Rule is processed seccessfully\n");
     return true;
 }
 
-bool checRulePart(ruleJoint_t * part, const program_t * program, int tokIndex) {
-    if (tokIndex >= program->tokenCount)
+bool checkRulePart(ruleJoint_t * rule, int * cursor, const program_t * program) {
+    if (DEBUGGING) printf("\tRule part processing...\n\tType of part index is %d\n", rule->type);
+    if (*cursor >= program->tokenCount)
         return false;
-    switch (part->type) {
+    switch (rule->type) {
         case KEY_WORDS_J:
-            if (program->tokens[tokIndex].type == KW && program->tokens[tokIndex].numericData.ivalue == part->RuleJointData.kwIndex)
+            if (DEBUGGING) printf("\tKey word with %d index is required\n", rule->RuleJointData.kwIndex);
+            if (DEBUGGING) printf("\tToken type is %d\n\tToken data is %lld\n", program->tokens[*cursor].type, program->tokens[*cursor].numericData.ivalue);
+            if (program->tokens[*cursor].type == KW && program->tokens[*cursor].numericData.ivalue == rule->RuleJointData.kwIndex)
                 return true;
             return false;
         case TYPE_J:
-            if (program->tokens[tokIndex].type == TYPE && program->tokens[tokIndex].numericData.ivalue == part->RuleJointData.typeIndex)
+            if (DEBUGGING) printf("\tToken of type is required\n");
+            if (DEBUGGING) printf("\tToken type is %d\n", program->tokens[*cursor].type);
+            if (program->tokens[*cursor].type == TYPE)
                 return true;
             return false;
         case TOK_J:
-            if (program->tokens[tokIndex].type == (TokenType)part->RuleJointData.TokenData.tokenType) {
-                if (part->RuleJointData.TokenData.tokenType == TOK_OPER_MIN || part->RuleJointData.TokenData.tokenType == TOK_ONE)
-                    if (program->tokens[tokIndex].numericData.ivalue != part->RuleJointData.TokenData.tokenAtribute)
-                        return false;
+            if (DEBUGGING) printf("\tToken of special type %d is required\n\tToken type is %d\n", rule->RuleJointData.TokenData.tokenType, program->tokens[*cursor].type);
+            if (program->tokens[*cursor].type == (TokenType)rule->RuleJointData.TokenData.tokenType) {
+                if (rule->RuleJointData.TokenData.tokenAtribute != -1 && program->tokens[*cursor].numericData.ivalue != rule->RuleJointData.TokenData.tokenAtribute)
+                    return false;
                 return true;
             }
             return false;
         case RULE_J:
-            rule_t * rule = (rule_t *)bstGet(grammar.syntaxRules, part->RuleJointData.ruleKey);
-            return ruleProcess(rule, tokIndex, program);
+            if (DEBUGGING) printf("\tRule is required...\n");
+            rule_t * innerRule = bstGet(grammar.syntaxRules, rule->RuleJointData.ruleKey);
+            return ruleProcess(innerRule, cursor, program);
         case CONST_J:
-            if (program->tokens[tokIndex].type == INT || program->tokens[tokIndex].type == FLOAT || program->tokens[tokIndex].type == STRING)
+            if (DEBUGGING) printf("\tSome constant value is required\n");
+            if (program->tokens[*cursor].type == INT || program->tokens[*cursor].type == FLOAT || program->tokens[*cursor].type == STRING)
                 return true;
             return false;
     }
