@@ -25,7 +25,7 @@ bst_t * getTypesTree();
 bst_t * getRuleTree();
 
 static const char * KEY_WORDS[] = {
-    "else",     "function",     "if",       "return",
+    "else",     "function",     "if",           "return",
     "while",    "declare",      "strict_types"
 };
 
@@ -42,11 +42,11 @@ static const char * TYPES[] = {
 };
 
 static const char * TOKENS[] = {
-    "?>",       "START",        "oper",     "-",
+    "?>",       "START",        "oper",     "-",     
     "=",        "funID",        "type",     "(",
     ")",        "{",            "}",        ":",
     ";",        "EOF",          "const",    "varID",
-    "?",        "1",            ","
+    "?",        "1",            "null",     ","
 };
 
 int grammarInit() {
@@ -353,6 +353,10 @@ void tokenDefine(ruleJoint_t * ruleJoint, TokenInd ind) {
         case TOK_ONE:
             ruleJoint->RuleJointData.TokenData.tokenType = (TokenInd)INT;
             ruleJoint->RuleJointData.TokenData.tokenAtribute = 1;
+            break;
+        case TOK_RET:
+            ruleJoint->RuleJointData.TokenData.tokenType = (TokenInd)TYPE;
+            ruleJoint->RuleJointData.TokenData.tokenAtribute = (long long)NULL_IND;
             break;
         case TOK_COMMA:
             ruleJoint->RuleJointData.TokenData.tokenType = (TokenInd)COMMA;

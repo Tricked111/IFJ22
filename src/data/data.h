@@ -68,6 +68,7 @@ typedef enum {
     TOK_VAR,
     TOK_QUEST,
     TOK_ONE,
+    TOK_RET,
     TOK_COMMA
 } TokenInd;
 
