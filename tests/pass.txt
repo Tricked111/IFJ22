@@ -1,4 +1,11 @@
 <?php
 declare(strict_types=1);
-
-$a + ((((43 + $c)+ 2)+3)+ 5) *$b;
+if ($a) {
+    while ($b) {
+        if ($c) {
+            printf($a, $b, $c, -2);
+        }
+        else {}
+    }
+}
+else {}

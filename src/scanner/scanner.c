@@ -118,14 +118,10 @@ ScannerStates processChar(scanner_t * scanner) {
                 scanner->action = WRITE;
                 return More;
             }
-            if (c == '*' || c == '+' || c == '.') {
+            if (c == '*' || c == '+' || c == '.' || c == '-') {
                 scanner->action = WRITE;
                 scanner->endOfToken = true;
                 return Oper;
-            }
-            if (c == '-') {
-                scanner->action = WRITE;
-                return OperMinus;
             }
             if (c == '/') {
                 scanner->action = WRITE;
@@ -205,27 +201,45 @@ ScannerStates processChar(scanner_t * scanner) {
         case FloatInter1:
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float1;
             }
             return Error;
         case FloatInter2:
             if (c == '+' || c == '-') {
                 scanner->action = WRITE;
-                return FloatInter1;
+                return FloatInter3;
             }
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float2;
             }
             return Error;
-        case Float:
+        case FloatInter3:
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float2;
+            }
+            return Error;
+        case Float1:
+            if (isdigit(c)) {
+                scanner->action = WRITE;
+                return Float1;
+            }
+            if (c == 'e' || c == 'E') {
+                scanner->action = WRITE;
+                return FloatInter2;
             }
             scanner->action = NEXT;
             scanner->endOfToken = true;
-            return Float;
+            return Float1;
+        case Float2:
+            if (isdigit(c)) {
+                scanner->action = WRITE;
+                return Float1;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Float2;
         case Question:
             if (c == '>') {
                 scanner->action = SKIP;
@@ -332,18 +346,6 @@ ScannerStates processChar(scanner_t * scanner) {
                 return Oper;
             }
             return Error;
-        case OperMinus:
-            if (isdigit(c)) {
-                scanner->action = WRITE;
-                return Num;
-            }
-            if (isspace(c)) {
-                scanner->action = SKIP;
-                return OperMinus;
-            }
-            scanner->action = NEXT;
-            scanner->endOfToken = true;
-            return Oper;
         case Assig:
             if (c == '=') {
                 scanner->action = WRITE;
@@ -426,7 +428,11 @@ void finishToken(scanner_t * scanner, token_t * token) {
             token->type = INT;
             token->numericData.ivalue = atoll(token->textData.str);
             break;
-        case Float:
+        case Float1:
+            token->type = FLOAT;
+            token->numericData.fvalue = atof(token->textData.str);
+            break;
+        case Float2:
             token->type = FLOAT;
             token->numericData.fvalue = atof(token->textData.str);
             break;

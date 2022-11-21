@@ -102,11 +102,12 @@ int main()
         printf("%d\n", retValue);
         return retValue;
     }
-    printProgramTokens(&program);
+    //printProgramTokens(&program);
     retValue = parseProgram(&program);
     if (retValue) {
         printf("%d\n", retValue);
         return retValue;
     }
+    printf("%d\n", retValue);
     return 0;
 }

@@ -22,7 +22,9 @@ typedef enum {
     Num,
     FloatInter1,
     FloatInter2,
-    Float,
+    FloatInter3,
+    Float1,
+    Float2,
     Question,
     PhpEnd,
     Less,
@@ -51,7 +53,6 @@ typedef enum {
     StringEnd,
     VarStart,
     Var,
-    OperMinus,
     Error
 } ScannerStates;
 
