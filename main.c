@@ -16,7 +16,7 @@
 #include "src/parser/parser.h"
 #include "src/bst/bst.h"
 #include "src/data/data.h"
-
+#include "src/symtable/symtable.h"
 
 /* 
 test main func changed
@@ -157,5 +157,24 @@ int main()
     
     //parseProgram();
     freeGrammar();
+
+
+
+    symtable test;
+    init_table(&test);
+
+    sym_data_t data;
+    init_data(&data);
+
+    insert_symbol(&test,"test",data);
+    insert_symbol(&test,"test2",data);
+    insert_symbol(&test,"test",data);
+
+
+    printf("%s",test->rptr->key);
+
+
+
+
     return 0;
 }

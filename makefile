@@ -6,8 +6,9 @@ PARSER=src/parser/parser
 STRING=src/str/ifj_string
 BST=src/bst/bst
 DATA=src/data/data
+SYMTABLE=src/symtable/symtable
 
-OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o $(BST).o $(DATA).o main.o
+OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o $(BST).o $(DATA).o $(SYMTABLE).o main.o
 NAME=IFJ22
 
 
