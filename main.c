@@ -17,6 +17,7 @@
 #include "src/bst/bst.h"
 #include "src/data/data.h"
 #include "src/symtable/symtable.h"
+#include "src/semantic/semantic.h"
 
 
 void printProgramTokens(program_t * program) {
@@ -110,5 +111,11 @@ int main()
         return retValue;
     }
     printf("%d\n", retValue);
+
+    retValue = semanticControl(&program);
+    if (retValue) {
+        printf("%d\n", retValue);
+        return retValue;
+    }
     return 0;
 }

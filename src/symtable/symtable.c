@@ -71,7 +71,7 @@ void add_retype(SymtableData *data,TypesInd param){
  * @param table symbol table in which should be searching executed
  * @param key key of element that should be found
  * @param data pointers to structures SymtableData
- * @return Pointer to found symbol or NULL
+ * @return correct insert
  */ 
 
 int insertSymtable(Symtable *table,uint32_t key,SymtableData * data){
