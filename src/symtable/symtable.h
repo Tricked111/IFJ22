@@ -1,11 +1,11 @@
 /******************************************************************************
  *                                  IFJ22
- *                                scanner.c
+ *                                symtable.c
  * 
  *      Authors: Daniil Kniazkin (xkniaz00)
  *      Purpose: Definition of operations on scanner and token structures
  * 
- *                        Last change: 18. 11. 2022
+ *                        Last change: 23. 11. 2022
  *****************************************************************************/
 
 
@@ -25,6 +25,7 @@
 #include "../data/data.h"
 
 
+
 /**
  * @brief Types of characters in the table
  */
@@ -32,84 +33,131 @@ typedef enum sym_type{
     S_VAR,S_FUNC
 }sym_type_t;
 
-/**
- * @brief Type of variabel or Return type in function
- */
-typedef enum sym_dtype{
-    S_NIL,S_INT,S_FLOAT,S_BOOl,S_STRING
-}sym_dtype_t;
-
 
 /**
- * @brief Struct with all data
+ * @brief Data structure for placing function attributes
  */
+typedef struct Func_dtype_t{
+    TypesInd retype;
+    TypesInd *func_params;
+    size_t lenght;
+    size_t size;
+}func_dtype_t;
 
-//var: type
-//func: param type ~ array type in param func
-
-
-//func: vehledat symbol,zmenit_type(var),pridat paramtert(func),smazat(),
-
+/**
+ * @brief Data structure for SymtableData
+ */
 typedef struct sym_data {
-    //string_t name;
-    TypesInd type; //bez Void 
-    sym_type_t typee;
-    //sym_dtype_t dtype;
-    //bool is_used;
+    sym_type_t type;
+    union D_type{
+        TypesInd var_type;
+        func_dtype_t func_type;
+    }dtype;
 }sym_data_t;
 
+typedef sym_data_t SymtableData;
+
 
 /**
- * @brief Struct BST for sym_data_t
+ * @brief Data structure for Symtable
  */
-
-typedef struct sym_tree{
-    char *key;
+typedef struct TreeNode{
+    uint32_t key;
     sym_data_t data;
-    struct sym_tree *lptr;
-    struct sym_tree *rptr;
-}sym_tree_t;
+    struct TreeNode *left;
+    struct TreeNode *right;
+}TreeNode_t;
+
+typedef TreeNode_t * Symtable;
 
 
+/**
+ * @brief Adds a variable and its type to the structure SymtableData
+ * @param data pointers to structures SymtableData
+ * @param type the type that will be assigned
+ */ 
+void add_var(SymtableData *data,TypesInd type);
 
 
-
+/**
+ * @brief Adds a func to the structure SymtableData
+ * @param data pointers to structures SymtableData
+ */ 
+void add_func(SymtableData *data);
 
 
 
 /**
- * @brief Pointer for tree
- */
-typedef sym_tree_t * symtable;
+ * @brief Adds a param for func to the structure SymtableData
+ * @param data pointers to structures SymtableData
+ * @param param the param that will be assigned
+ */ 
+void add_func_param(SymtableData *data,TypesInd param);
 
-
-
-typedef struct symtable{
-    sym_tree_t *t;
-}symtabel_t;
-
-
-//symtable first = NULL;  =    symtable_t first;  first->t
 
 
 /**
- * @brief Initializes symbol table
- * @param 
- */
-void init_table(symtable *table);
+ * @brief Adds a return type for func to the structure SymtableData
+ * @param data pointers to structures SymtableData
+ * @param param the param that will be assigned
+ */ 
+void add_retype(SymtableData *data,TypesInd param);
+
+
 
 /**
- * @brief Initializes data struct symbol
- */
-int init_data(sym_data_t *data);
+ * @brief Inserts a new element into existing symbol table or updates existing node
+ * @param table symbol table in which should be searching executed
+ * @param key key of element that should be found
+ * @param data pointers to structures SymtableData
+ * @return Pointer to found symbol or NULL
+ */ 
+int insertSymtable(Symtable *table,uint32_t key,SymtableData *data);
 
 
-void data_free(sym_data_t *data);
+
+/**
+ * @brief Returns a pointer to the parameter list
+ * @param data structures SymtableData
+ * @return Pointer to the parameter list
+ */ 
+TypesInd * return_param_func(SymtableData data);
+
+/**
+ * @brief clears parameters 
+ * @param data double pointers to structures SymtableData
+ */ 
+void freeParams(SymtableData **data);
 
 
-void insert_symbol(symtable *table,const char *key,sym_data_t data);
 
-int mem_for_key(char **str,const char *str2,size_t len);
+/**
+ * @brief Returns the structure depending on the key
+ * @param table symbol table in which should be searching executed
+ * @param key key of element that should be found
+ * @return Pointer to SymtableData
+ */ 
+SymtableData *symtableGet(Symtable *table,uint32_t key); 
+
+
+
+/**
+ * @brief Checking for availability in the table
+ * @param table symbol table in which should be searching executed
+ * @param key key of element that should be found
+ * @return bool type
+ */ 
+bool symtableSearch(Symtable *table,uint32_t key);
+
+
+
+/**
+ * @brief Replaces the type with a variable depending on the key
+ * @param table symbol table in which should be searching executed
+ * @param key key of element that should be found
+ * @param type the type that will be assigned
+ */ 
+void replaceType(Symtable *table,uint32_t key,TypesInd type); //for var
 
 
 #endif

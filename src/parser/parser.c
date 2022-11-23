@@ -60,8 +60,11 @@ bool checkRulePart(ruleJoint_t * rule, int * cursor, const program_t * program) 
         case TYPE_J:
             if (DEBUGGING) printf("\tToken of type is required\n");
             if (DEBUGGING) printf("\tToken type is %d\n", program->tokens[*cursor].type);
-            if (program->tokens[*cursor].type == TYPE)
+            if (program->tokens[*cursor].type == TYPE) {
+                if (rule->RuleJointData.TokenData.tokenAtribute != -1 && program->tokens[*cursor].numericData.ivalue != rule->RuleJointData.TokenData.tokenAtribute)
+                    return false;
                 return true;
+            }
             return false;
         case TOK_J:
             if (DEBUGGING) printf("\tToken of special type %d is required\n\tToken type is %d\n", rule->RuleJointData.TokenData.tokenType, program->tokens[*cursor].type);
