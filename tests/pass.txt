@@ -1,3 +1,5 @@
 <?php
 declare(strict_types=1);
-$a !== null + 5;
+$a = 5;
+$b = $a;
+ahoj($a, 3);

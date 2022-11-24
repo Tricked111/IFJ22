@@ -101,20 +101,21 @@ int main()
     program_t program;
     int retValue = readPogram(&program);
     if (retValue) {
-        printf("%d\n", retValue);
+        //printf("%d\n", retValue);
         return retValue;
     }
+
     //printProgramTokens(&program);
     retValue = parseProgram(&program);
     if (retValue) {
-        printf("%d\n", retValue);
+        //printf("%d\n", retValue);
         return retValue;
     }
-    printf("%d\n", retValue);
+    //printf("%d\n", retValue);
 
     retValue = semanticControl(&program);
     if (retValue) {
-        printf("%d\n", retValue);
+        //printf("Semantic: %d\n", retValue);
         return retValue;
     }
     return 0;

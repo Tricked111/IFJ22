@@ -17,9 +17,9 @@
 #include "../scanner/scanner.h"
 
 uint32_t getKey(const char *str);
-TypesInd typeIndChoice(token_t* token);
-int varToken(const program_t *program, int poss, Symtable *table, token_t* token);
-int funCallToken(const program_t *program, int poss, Symtable *table, token_t* token);
+TypesInd typeIndChoice(token_t token);
+int varToken(const program_t *program, int poss, Symtable *table, token_t token);
+int funCallToken(const program_t *program, int poss, Symtable *table, token_t token);
 int semanticControl(const program_t *program);
 
 #endif

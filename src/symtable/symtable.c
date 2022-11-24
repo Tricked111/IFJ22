@@ -76,7 +76,7 @@ void add_retype(SymtableData *data,TypesInd param){
 
 int insertSymtable(Symtable *table,uint32_t key,SymtableData * data){
     if (*table == NULL) {
-        printf("NULL\n");
+        //printf("NULL\n");
         if ((*table = (TreeNode_t*)malloc(sizeof(TreeNode_t))) == NULL)
             return 1;
         (*table)->data = *data;
