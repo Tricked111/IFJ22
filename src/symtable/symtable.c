@@ -3,7 +3,7 @@
  *                                symtable.c
  * 
  *      Authors: Daniil Kniazkin (xkniaz00)
- *      Purpose: Definition of operations on scanner and token structures
+ *      Purpose: Symtable
  * 
  *                        Last change: 23. 11. 2022
  *****************************************************************************/

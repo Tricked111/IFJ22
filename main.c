@@ -100,23 +100,20 @@ int main()
         return INTERN_ERR;
     program_t program;
     int retValue = readPogram(&program);
-    if (retValue) {
-        //printf("%d\n", retValue);
+    if (retValue) {        
         return retValue;
     }
 
     //printProgramTokens(&program);
     retValue = parseProgram(&program);
-    if (retValue) {
-        //printf("%d\n", retValue);
+    if (retValue) {        
         return retValue;
-    }
-    //printf("%d\n", retValue);
+    }    
 
     retValue = semanticControl(&program);
-    if (retValue) {
-        //printf("Semantic: %d\n", retValue);
+    if (retValue) {        
         return retValue;
     }
+    
     return 0;
 }

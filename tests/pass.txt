@@ -1,5 +1,4 @@
 <?php
 declare(strict_types=1);
-$a = 5;
-$b = $a;
-ahoj($a, 3);
+$b = 3;
+if (($a > 5 + 5) {}else{}
