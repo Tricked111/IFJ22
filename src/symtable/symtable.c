@@ -71,11 +71,12 @@ void add_retype(SymtableData *data,TypesInd param){
  * @param table symbol table in which should be searching executed
  * @param key key of element that should be found
  * @param data pointers to structures SymtableData
+ * @return correct insert
  */ 
 
 int insertSymtable(Symtable *table,uint32_t key,SymtableData * data){
     if (*table == NULL) {
-        printf("NULL\n");
+        //printf("NULL\n");
         if ((*table = (TreeNode_t*)malloc(sizeof(TreeNode_t))) == NULL)
             return 1;
         (*table)->data = *data;

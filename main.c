@@ -17,6 +17,7 @@
 #include "src/bst/bst.h"
 #include "src/data/data.h"
 #include "src/symtable/symtable.h"
+#include "src/semantic/semantic.h"
 
 
 void printProgramTokens(program_t * program) {
@@ -99,16 +100,20 @@ int main()
         return INTERN_ERR;
     program_t program;
     int retValue = readPogram(&program);
-    if (retValue) {
-        fprintf(stderr, "%d\n", retValue);
+    if (retValue) {        
         return retValue;
     }
+
     //printProgramTokens(&program);
     retValue = parseProgram(&program);
-    if (retValue) {
-        fprintf(stderr, "%d\n", retValue);
+    if (retValue) {        
+        return retValue;
+    }    
+
+    retValue = semanticControl(&program);
+    if (retValue) {        
         return retValue;
     }
-    fprintf(stderr, "%d\n", retValue);
+    
     return 0;
 }
