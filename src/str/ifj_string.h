@@ -6,7 +6,7 @@
  *      Authors: Nikita Kotvitskiy (xkotvi01)
  *      Purpose: Declaration of string structure and operations on them
  * 
- *                        Last change: 24. 10. 2022
+ *                        Last change: 16. 11. 2022
  *****************************************************************************/
 
 #ifndef IFJ_STRING_H
@@ -25,13 +25,13 @@ typedef struct string {
 } string_t;
 
 //Initiates string on str address.
-void stringInit(string_t * str);
+int stringInit(string_t * str);
 //Free string on str address.
 void stringFree(string_t * str);
 //Appends new symbol newChar to the end of string on str address.
-void stringAppend(string_t * str, char newChar);
+int stringAppend(string_t * str, char newChar);
 //Erases a string on str address.
-void stringClear(string_t * str);
+int stringClear(string_t * str);
 //Copies string on strSource address to string on strDest address.
 void stringCopy(string_t * strDest, string_t * strSource);
 //Returns pointer to the first char of string in str address.

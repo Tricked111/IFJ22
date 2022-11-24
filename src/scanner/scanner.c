@@ -6,19 +6,52 @@
  *      Authors: Nikita Kotvitskiy (xkotvi01)
  *      Purpose: Definition of operations on scanner and token structures
  * 
- *                        Last change: 24. 10. 2022
+ *                        Last change: 16. 11. 2022
  *****************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "scanner.h"
+#include "../data/data.h"
+#include "../compError.h"
 
+void scannerInit(scanner_t * scanner);
+//Initiates token on token address.
+void tokenInit(token_t * token);
+//Returns token on token address to it's initial state.
+void tokenClean(token_t * token);
+//Free token on token address.
+void tokenFree(token_t * token);
+//Reads next token from stdin with scanner on scanner address and returns pointer to new token.
+token_t getToken(scanner_t * scanner);
 //Processes symbol in scanner->symbol, defines new scanner state and decides, which type of action should be performed with the symbol.
 ScannerStates processChar(scanner_t * scanner);
 //Performs action with the symbol.
 void charAction(scanner_t * scanner, token_t * token);
 //Fills token structure with data.
 void finishToken(scanner_t * scanner, token_t * token);
+
+int readPogram(program_t * program) {
+    scanner_t scanner;
+    scannerInit(&scanner);
+
+    program->tokenCount = 0;
+    if ((program->tokens = malloc(0)) == NULL)
+        return INTERN_ERR;
+    TokenType tokType;
+    token_t token;
+    do {
+        token = getToken(&scanner);
+        tokType = token.type;
+        program->tokenCount++;
+        if ((program->tokens = realloc(program->tokens, sizeof(token_t) * program->tokenCount)) == NULL)
+            return INTERN_ERR;
+        program->tokens[program->tokenCount - 1] = token;
+        if (token.type == ERROR)
+            return LEXICAL_ERR;
+    } while (tokType != END && tokType != PHP_END);
+    return 0;
+}
 
 //TEMPORARY!!!!
 void error() {
@@ -53,8 +86,10 @@ token_t getToken(scanner_t * scanner) {
         if (scanner->symbol == 0)               //If there is not any symbol to process in scanner, read new one.
             scanner->symbol = getchar();
         scanner->state = processChar(scanner);  //Processing the symbol.
-        if (scanner->state == Error)            //Lexical error handling.
-            error();
+        if (scanner->state == Error) {
+            token.type = ERROR;
+            return token;
+        }
         charAction(scanner, &token);            //Performing action on symbol.
     }
     finishToken(scanner, &token);               //Filling token structure.
@@ -83,14 +118,10 @@ ScannerStates processChar(scanner_t * scanner) {
                 scanner->action = WRITE;
                 return More;
             }
-            if (c == '*' || c == '+' || c == '.') {
+            if (c == '*' || c == '+' || c == '.' || c == '-') {
                 scanner->action = WRITE;
                 scanner->endOfToken = true;
                 return Oper;
-            }
-            if (c == '-') {
-                scanner->action = WRITE;
-                return OperMinus;
             }
             if (c == '/') {
                 scanner->action = WRITE;
@@ -170,27 +201,45 @@ ScannerStates processChar(scanner_t * scanner) {
         case FloatInter1:
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float1;
             }
             return Error;
         case FloatInter2:
             if (c == '+' || c == '-') {
                 scanner->action = WRITE;
-                return FloatInter1;
+                return FloatInter3;
             }
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float2;
             }
             return Error;
-        case Float:
+        case FloatInter3:
             if (isdigit(c)) {
                 scanner->action = WRITE;
-                return Float;
+                return Float2;
+            }
+            return Error;
+        case Float1:
+            if (isdigit(c)) {
+                scanner->action = WRITE;
+                return Float1;
+            }
+            if (c == 'e' || c == 'E') {
+                scanner->action = WRITE;
+                return FloatInter2;
             }
             scanner->action = NEXT;
             scanner->endOfToken = true;
-            return Float;
+            return Float1;
+        case Float2:
+            if (isdigit(c)) {
+                scanner->action = WRITE;
+                return Float1;
+            }
+            scanner->action = NEXT;
+            scanner->endOfToken = true;
+            return Float2;
         case Question:
             if (c == '>') {
                 scanner->action = SKIP;
@@ -297,18 +346,6 @@ ScannerStates processChar(scanner_t * scanner) {
                 return Oper;
             }
             return Error;
-        case OperMinus:
-            if (isdigit(c)) {
-                scanner->action = WRITE;
-                return Num;
-            }
-            if (isspace(c)) {
-                scanner->action = SKIP;
-                return OperMinus;
-            }
-            scanner->action = NEXT;
-            scanner->endOfToken = true;
-            return Oper;
         case Assig:
             if (c == '=') {
                 scanner->action = WRITE;
@@ -384,13 +421,18 @@ void charAction(scanner_t * scanner, token_t * token) {
 }
 
 void finishToken(scanner_t * scanner, token_t * token) {
+    key_t key;
     switch (scanner->state)
     {
         case Num:
             token->type = INT;
             token->numericData.ivalue = atoll(token->textData.str);
             break;
-        case Float:
+        case Float1:
+            token->type = FLOAT;
+            token->numericData.fvalue = atof(token->textData.str);
+            break;
+        case Float2:
             token->type = FLOAT;
             token->numericData.fvalue = atof(token->textData.str);
             break;
@@ -402,6 +444,8 @@ void finishToken(scanner_t * scanner, token_t * token) {
             break;
         case Oper:
             token->type = OPER;
+            key = get_key(stringRead(&(token->textData)));
+            token->numericData.ivalue = *(long long *)bstGet(grammar.operators, key);
             break;
         case Assig:
             token->type = ASSIG;
@@ -426,14 +470,41 @@ void finishToken(scanner_t * scanner, token_t * token) {
             break;
         case Bracket:
             token->type = BRACK;
-            token->numericData.ivalue = *stringRead(&(token->textData)) == '(' ? 0 : 1;
+            if (*stringRead(&(token->textData)) == '(') {
+                token->type = BR_O;
+                token->numericData.ivalue = 0;
+            }
+            else {
+                token->type = BR_C;
+                token->numericData.ivalue = 1;
+            }
             break;
         case CBracket:
-            token->type = CBRACK;
-            token->numericData.ivalue = *stringRead(&(token->textData)) == '{' ? 0 : 1;
+            token->type = BRACK;
+            if (*stringRead(&(token->textData)) == '{') {
+                token->type = CB_O;
+                token->numericData.ivalue = 0;
+            }
+            else {
+                token->type = CB_C;
+                token->numericData.ivalue = 1;
+            }
             break;
         case ID:
-            token->type = IDEN;
+            key = get_key(stringRead(&(token->textData)));
+            void * searchResult = bstGet(grammar.keyWords, key);
+            if (searchResult != NULL) {
+                token->type = KW;
+                token->numericData.ivalue = *(long long *)searchResult;
+                break;
+            }
+            searchResult = bstGet(grammar.types, key);
+            if (searchResult != NULL) {
+                token->type = TYPE;
+                token->numericData.ivalue = *(long long *)searchResult;
+                break;
+            }
+            token->type = FUN;
             break;
         case Question:
             token->type = QUEST;

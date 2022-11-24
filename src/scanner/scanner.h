@@ -5,13 +5,14 @@
  *      Authors: Nikita Kotvitskiy (xkotvi01)
  *      Purpose: Declaration of scanner and token structures and operations on them
  * 
- *                        Last change: 24. 10. 2022
+ *                        Last change: 16. 11. 2022
  *****************************************************************************/
 
 #ifndef SCANNER_H
 #define SCANNER_H
 
 #include "../str/ifj_string.h"
+#include "../data/data.h"
 #include <ctype.h>
 #include <stdbool.h>
 
@@ -21,7 +22,9 @@ typedef enum {
     Num,
     FloatInter1,
     FloatInter2,
-    Float,
+    FloatInter3,
+    Float1,
+    Float2,
     Question,
     PhpEnd,
     Less,
@@ -50,29 +53,29 @@ typedef enum {
     StringEnd,
     VarStart,
     Var,
-    OperMinus,
     Error
 } ScannerStates;
 
 //Types of tokens.
 typedef enum {
-    tok_init,   //Default value of new inicialized token, does not denote any real type of token.
-    FLOAT,
-    INT,
-    PHP_END,
-    PHP_START,
-    OPER, 
-    ASSIG,
-    IDEN,
-    CBRACK,
-    BRACK,
-    COMMA,
-    SEMICOLON,
-    COLON,
-    END,
-    STRING,
-    VAR,
-    QUEST
+    FLOAT,      
+    INT,        
+    PHP_END,    
+    PHP_START,  
+    OPER,
+    ASSIG,      
+    IDEN,           KW,     FUN,    TYPE,
+    CBRACK,         CB_O,   CB_C,
+    BRACK,          BR_O,   BR_C,
+    COMMA,      
+    SEMICOLON,  
+    COLON,      
+    END,        
+    STRING,     
+    VAR,        
+    QUEST,
+    ERROR,
+    tok_init   //Default value of new inicialized token, does not denote any real type of token.
 } TokenType;
 
 //Types of action on processed symbol.
@@ -100,14 +103,13 @@ typedef struct Scanner {
     bool endOfToken;            //Indicates whether we have reached the end of token.
 } scanner_t;
 
-void scannerInit(scanner_t * scanner);
-//Initiates token on token address.
-void tokenInit(token_t * token);
-//Returns token on token address to it's initial state.
-void tokenClean(token_t * token);
-//Free token on token address.
-void tokenFree(token_t * token);
-//Reads next token from stdin with scanner on scanner address and returns pointer to new token.
-token_t getToken(scanner_t * scanner);
+//Structure including all program tokens.
+typedef struct Program {
+    int tokenCount;
+    token_t * tokens;
+} program_t;
+
+//Reads program and load it's tokens into global program structure
+int readPogram(program_t * program);
 
 #endif
