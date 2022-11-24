@@ -100,15 +100,15 @@ int main()
     program_t program;
     int retValue = readPogram(&program);
     if (retValue) {
-        printf("%d\n", retValue);
+        fprintf(stderr, "%d\n", retValue);
         return retValue;
     }
     //printProgramTokens(&program);
     retValue = parseProgram(&program);
     if (retValue) {
-        printf("%d\n", retValue);
+        fprintf(stderr, "%d\n", retValue);
         return retValue;
     }
-    printf("%d\n", retValue);
+    fprintf(stderr, "%d\n", retValue);
     return 0;
 }
