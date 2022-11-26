@@ -117,8 +117,26 @@ int funCallToken(const program_t *program, int poss, Symtable *table, token_t to
     return 0;
 }
 
+
+/*//TEMPORARY!!!!!!
+void printAllFuncParams(Symtable funcTable) {
+    if (funcTable == NULL)
+        return;
+    printAllFuncParams(funcTable->right);
+    printAllFuncParams(funcTable->left);
+    printf("FUN %lld: \t", (long long)funcTable->key);
+    for (int i = 0; i < (int)funcTable->data.dtype.func_type.lenght; i++)
+        printf("%d, ", (int)funcTable->data.dtype.func_type.func_params[i]);
+    printf("\n\tReturn type: %d\n", (int)funcTable->data.dtype.func_type.retype);
+}*/
+
 int semanticControl(const program_t *program) {
     Symtable globalTable = NULL;
+
+    Symtable funcTable;
+    int getFunTableRet = getFunTable(program, &funcTable);
+    if (getFunTableRet)
+        return getFunTableRet;
 
     /**
     SymtableData data;
@@ -190,4 +208,73 @@ int semanticControl(const program_t *program) {
     return 0;
 }
 
+int getFunTable(const program_t * program, Symtable * funcTable) {
+    Symtable newFuncTable = NULL;
+    FunDefsStates state = SF_START;
 
+    uint32_t key; 
+    SymtableData * newFuncData;
+    bst_t * params;
+    bstInit(&params);
+
+    for (int i = 0; i < program->tokenCount; i++) {
+        switch (state) {
+            case SF_START:
+                if (program->tokens[i].type == END || program->tokens[i].type == PHP_END)
+                    state = SF_END;
+                else if (program->tokens[i].type == KW && program->tokens[i].numericData.ivalue == (long long)KW_FUNC_IND)
+                    state = SF_FUN_DEC;
+                continue;
+            case SF_FUN_DEC:
+                key = getKey(stringRead(&(program->tokens[i].textData)));
+                if (symtableSearch(&newFuncTable, key))
+                    return 3;
+                if ((newFuncData = malloc(sizeof(SymtableData))) == NULL)
+                    return 99;
+                add_func(newFuncData);
+                state = SF_SKIP_BR;
+                continue;
+            case SF_GET_PARAM:
+                if (program->tokens[i].type == TYPE) {
+                    add_func_param(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue);
+                    state = SF_SKIP_NAME;
+                }
+                else if (program->tokens[i].type == BR_C)
+                    state = SF_SKIP_COLON;
+                continue;
+            case SF_SKIP_NAME:
+                string_t * name = &(program->tokens[i].textData);
+                key_t paramKey = get_key(stringRead(name));
+                if (bstSearch(params, paramKey))
+                    return 8;
+                bstInsert(&params, paramKey, (bstData_t)name);
+                state = SF_CHECK_NEXT;
+                continue;
+            case SF_CHECK_NEXT:
+                if (program->tokens[i].type == COMMA)
+                    state = SF_GET_PARAM;
+                else if (program->tokens[i].type == BR_C)
+                    state = SF_SKIP_COLON;
+                continue;
+            case SF_GET_TYPE:
+                if (program->tokens[i].type == QUEST)
+                    state = SF_GET_QUEST_TYPE;
+                else if (program->tokens[i].type == TYPE) {
+                    add_retype(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue);
+                    state = SF_FUN_START;
+                }
+                continue;
+            case SF_FUN_START:
+                insertSymtable(&newFuncTable, key, newFuncData);
+                bstDestroy(&params);
+                state = SF_START;
+                continue;
+            case SF_END:
+                break;
+            default:
+                state++;
+        }
+    }
+    *funcTable = newFuncTable;
+    return 0;
+}

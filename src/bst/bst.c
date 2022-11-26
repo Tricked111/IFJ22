@@ -19,7 +19,6 @@ void bstDestroy(bst_t ** bst) {
     if (*bst != NULL) {
         bstDestroy(&((*bst)->left));
         bstDestroy(&((*bst)->right));
-        free((*bst)->data);
         free(*bst);
         *bst = NULL;
     }

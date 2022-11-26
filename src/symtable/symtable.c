@@ -50,6 +50,11 @@ void add_func_param(SymtableData *data,TypesInd param){
         data->dtype.func_type.func_params = realloc(data->dtype.func_type.func_params,data->dtype.func_type.size * (sizeof(TypesInd)));
     }
     data->dtype.func_type.func_params[data->dtype.func_type.lenght++] = param;
+    /*printf("============\n");
+    printf("%d\n", (int)data->dtype.func_type.lenght);
+    for (int i = 0; i < (int)data->dtype.func_type.lenght; i++)
+        printf("%d\n", (int)data->dtype.func_type.func_params[i]);
+    printf("============\n");*/
 }
 
 
