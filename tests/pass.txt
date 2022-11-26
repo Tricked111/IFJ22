@@ -1,4 +1,6 @@
 <?php
 declare(strict_types=1);
 $b = 3;
-if (($a > 5 + 5) {}else{}
+if ($a > 5 + 5) {}else{}
+function abc (int $a, float $b, float $c) : void {}
+function cba (int $b, float $c, void $d) : int {}
