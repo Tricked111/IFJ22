@@ -90,7 +90,7 @@ int insertSymtable(Symtable *table,uint32_t key,SymtableData * data){
         (*table)->left = NULL;
         return 0;
     }
-    if(key == (*table)->key){
+    if(key == (*table)->key){       // free predchadzajuce data?
         (*table)->data = *data;
         return 0;
     }

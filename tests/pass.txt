@@ -1,2 +1,9 @@
 <?php
 declare(strict_types=1);
+$b = ahoj(3);
+$a = $b;
+ahoj(3);
+function ahoj(int $c) : int {
+    $h = $c;
+}
+$a = $h;
