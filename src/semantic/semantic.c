@@ -5,7 +5,7 @@
  *      Authors: Alžbeta Hricovová (xhrico00)
  *      Purpose: Semantic control
  * 
- *                        Last change: 23. 11. 2022
+ *                        Last change: 27. 11. 2022
  *****************************************************************************/
 #include "semantic.h"
 
