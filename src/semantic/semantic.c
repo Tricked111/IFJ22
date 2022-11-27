@@ -44,16 +44,13 @@ int varToken(const program_t *program, int poss, Symtable *globalTable, token_t 
 
         case VAR:
             if(program->tokens[poss+1].type == SEMICOLON) {
-
-                
-                if(!symtableSearch(table, key)) {
-                    if(local) {
-                        if(!symtableSearch(globalTable, key)) {
-                            return 5;
-                        } 
-                        get = globalTable;                   
-                    } else {
-                        return 5;
+                if(!symtableSearch(table, getKey(program->tokens[poss].textData.str))) {
+                    return 5;
+                } else {
+                    
+                    add_var(data, (symtableGet(table, getKey(program->tokens[poss].textData.str)))->dtype.var_type);
+                    if(insertSymtable(table, getKey(token.textData.str), data)) {
+                        return 99;
                     }
                 }
                 
