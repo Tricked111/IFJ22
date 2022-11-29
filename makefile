@@ -8,8 +8,9 @@ BST=src/bst/bst
 DATA=src/data/data
 SYMTABLE=src/symtable/symtable
 SEMANTIC=src/semantic/semantic
+EXPRESSION=src/expressions/expr
 
-OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o $(BST).o $(DATA).o $(SYMTABLE).o $(SEMANTIC).o main.o
+OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o $(BST).o $(DATA).o $(SYMTABLE).o $(SEMANTIC).o $(EXPRESSION).o main.o
 NAME=IFJ22
 
 
