@@ -1,3 +1,13 @@
+/******************************************************************************
+ *                                  IFJ22
+ *                                 expr.c
+ * 
+ *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *      Purpose: Definitions of functions used for expressions transformation to postfix notation.
+ * 
+ *                        Last change: 29. 11. 2022
+ *****************************************************************************/
+
 #include "expr.h"
 #include "../data/data.h"
 

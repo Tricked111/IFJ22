@@ -1,3 +1,13 @@
+/******************************************************************************
+ *                                  IFJ22
+ *                                 expr.h
+ * 
+ *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *      Purpose: Declaration of structure and functions for expressions transformation to postfix notation.
+ * 
+ *                        Last change: 29. 11. 2022
+ *****************************************************************************/
+
 #ifndef EXPR_H
 #define EXPR_H
 
