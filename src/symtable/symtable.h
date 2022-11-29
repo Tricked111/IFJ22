@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include "../str/ifj_string.h"
 #include "../data/data.h"
+#include "../bst/bst.h"
 
 
 
@@ -138,6 +139,12 @@ void freeParams(SymtableData **data);
  */ 
 SymtableData *symtableGet(Symtable *table,uint32_t key); 
 
+/**
+ * @brief Insert in table built functions
+ * @param table pointer to structures Symtable
+ */ 
+void built_function(Symtable * table);
+
 
 
 /**
@@ -157,6 +164,19 @@ bool symtableSearch(Symtable *table,uint32_t key);
  * @param type the type that will be assigned
  */ 
 void replaceType(Symtable *table,uint32_t key,TypesInd type); //for var
+
+/**
+ * @brief Return min Value in Tree
+ * @param table pointer to structures Symtable
+ */ 
+Symtable minValueNode(Symtable table);
+
+/**
+ * @brief Delete synbol from symtable
+ * @param table pointer to structures Symtable
+ * @param key key to delete
+ */ 
+Symtable symtableDelete(Symtable *table,uint32_t key);
 
 
 #endif

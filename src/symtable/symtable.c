@@ -175,3 +175,123 @@ void replaceType(Symtable * table,uint32_t key,TypesInd new_type){
     insertSymtable(&(*table),key,data);
 }
 
+
+
+/**
+ * @brief Insert in table built functions
+ * @param table pointer to structures Symtable
+ */ 
+void built_function(Symtable * table){
+    
+    
+    SymtableData reads;
+    add_func(&reads);
+    add_retype(&reads,STRING_IND);
+    if(insertSymtable(&(*table),get_key("reads"),&reads)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+
+    SymtableData readi;
+    add_func(&readi);
+    add_retype(&readi,INT_IND);
+    if(insertSymtable(&(*table),get_key("readi"),&readi)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+
+    SymtableData readf;
+    add_func(&readf);
+    add_retype(&readf,FLOAT_IND);
+    if(insertSymtable(&(*table),get_key("readf"),&readf)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+    
+
+    SymtableData strlen;
+    add_func(&strlen);
+    add_func_param(&strlen,STRING_IND);
+    add_retype(&strlen,INT_IND);
+    if(insertSymtable(&(*table),get_key("strlen"),&strlen)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+    SymtableData substring;
+    add_func(&substring);
+    add_func_param(&substring,STRING_IND);
+    add_func_param(&substring,INT_IND);
+    add_func_param(&substring,INT_IND);
+    add_retype(&substring,STRING_IND);
+    if(insertSymtable(&(*table),get_key("substring"),&substring)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+
+    SymtableData write;
+    add_func(&write);
+    add_retype(&write,FLOAT_IND);
+    if(insertSymtable(&(*table),get_key("write"),&write)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+    SymtableData ord;
+    add_func(&ord);
+    add_func_param(&ord,STRING_IND);
+    add_retype(&ord,INT_IND);
+    if(insertSymtable(&(*table),get_key("ord"),&ord)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+    SymtableData chr;
+    add_func(&chr);
+    add_func_param(&chr,INT_IND);
+    add_retype(&chr,STRING_IND);
+    if(insertSymtable(&(*table),get_key("chr"),&chr)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+}
+
+/**
+ * @brief Return min Value in Tree
+ * @param table pointer to structures Symtable
+ */ 
+Symtable minValueNode(Symtable table){
+    Symtable current = table;
+
+    while(current && current->left != NULL){
+        current = current->left;
+    }
+
+    return current;
+}
+
+
+/**
+ * @brief Delete synbol from symtable
+ * @param table pointer to structures Symtable
+ * @param key key to delete
+ */ 
+Symtable symtableDelete(Symtable *table,uint32_t key){
+    if(*table == NULL){return *table;}
+
+    if(key < (*table)->key){
+        (*table)->left = symtableDelete(&(*table)->left,key);
+    }
+
+    else if(key > (*table)->key){
+        (*table)->right = symtableDelete(&(*table)->right,key);
+    }
+
+    else{
+        if((*table)->left == NULL){
+            Symtable temp = (*table)->right;
+            free((*table));
+            return temp;
+        }
+        Symtable temp = minValueNode((*table)->right);
+        (*table)->key = temp->key;
+        (*table)->right = symtableDelete(&(*table)->right,key);
+    }
+
+    return *table;
+}
