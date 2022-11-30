@@ -115,7 +115,7 @@ int main()
 
     retValue = semanticControl(&program);
     if (retValue) {        
-        //printf("%d\n", retValue);
+        printf("%d\n", retValue);
         return retValue;
     }
     
