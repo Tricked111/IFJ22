@@ -96,6 +96,7 @@ void printProgramTokens(program_t * program) {
 
 int main()
 {
+    //TODO typo -> expr.c -> puch | memmory leaks
     if (grammarInit())
         return INTERN_ERR;
     program_t program;

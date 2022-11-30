@@ -9,36 +9,6 @@
  *****************************************************************************/
 #include "semantic.h"
 
-//Source: https://en.wikipedia.org/wiki/Jenkins_hash_function
-
-uint32_t getKey(const char *str)
-{   
-    uint32_t hash = 0;
-    size_t i = 0;
-    while (str[i]) {
-        hash += str[i];
-        hash += hash << 10;
-        hash ^= hash >> 6;
-        i++;
-    }
-    hash += hash << 3;
-    hash ^= hash >> 11;
-    hash += hash << 15;
-    return hash;
-} 
-
-TypesInd typeIndChoice(token_t token) {
-    switch(token.type) {
-        case INT:
-            return INT_IND;
-        case FLOAT:
-            return FLOAT_IND;
-        case STRING:
-            return STRING_IND;
-        default:
-            return NULL_IND;    //?
-    }
-}
 
 int varToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local) {
     SymtableData *data = malloc(sizeof(SymtableData));
@@ -210,6 +180,7 @@ int semanticControl(const program_t *program) {
     
     for (int i = 0; i < program->tokenCount; i++) {     //dalej key words a vyraz bez priradenia (string + int), return, vyraz
         tok = program->tokens[i];
+        pfExpr_t expr;
         switch (state) {
             case S_START:                
                 if (tok.type == END || tok.type == PHP_END) {
@@ -241,7 +212,15 @@ int semanticControl(const program_t *program) {
                         return err;
                     }                    
                 } else {      // $a + $b; bez priradenia poriesit
-                     
+                    
+                    // expr = makeExpression(program, i-1);
+                    // for (int i = 0; i < expr.size; i++) {
+                    //     printf("%s \n", expr.expr[i].textData.str);
+                    // }
+                    // TypesInd type;
+                    // evaluateExpression(&globalTable ,&expr, &type);
+                    // printf("Resolved:%i\n", type);
+
                 }
                 state = S_ROW_END;
                 continue;
