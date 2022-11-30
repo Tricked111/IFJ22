@@ -216,6 +216,8 @@ int getFunTable(const program_t * program, Symtable * funcTable) {
     SymtableData * newFuncData;
     bst_t * params;
     bstInit(&params);
+    string_t * name;
+    key_t paramKey;
 
     for (int i = 0; i < program->tokenCount; i++) {
         switch (state) {
@@ -243,8 +245,8 @@ int getFunTable(const program_t * program, Symtable * funcTable) {
                     state = SF_SKIP_COLON;
                 continue;
             case SF_SKIP_NAME:
-                string_t * name = &(program->tokens[i].textData);
-                key_t paramKey = get_key(stringRead(name));
+                name = &(program->tokens[i].textData);
+                paramKey = get_key(stringRead(name));
                 if (bstSearch(params, paramKey))
                     return 8;
                 bstInsert(&params, paramKey, (bstData_t)name);
