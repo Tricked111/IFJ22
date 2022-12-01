@@ -5,8 +5,8 @@
                         PUSHFRAME
                         LABEL __WHILE_[WHILE_ID]_1
                         <expr>
-                        PUSHS int@1
-                        JUMPIFNEQS __WHILE_[WHILE_ID]_2
+                        PUSHS int@0
+                        JUMPIFEQS __WHILE_[WHILE_ID]_2
                         <body>
                         JUMP __WHILE_[WHILE_ID]_1
                         LABEL __WHILE_[WHILE_ID]_2

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 $a = 5;
-while ($a !== null) {
+while ($a) {
     $a = $a - 1;
     write($a);
 }
