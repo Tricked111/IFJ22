@@ -1,0 +1,124 @@
+.IFJcode22
+
+DEFVAR GF@__BOOLCONV
+
+CREATEFRAME
+PUSHFRAME
+
+DEFVAR LF@a                 # $a = 5;
+PUSHS int@5
+POPS LF@a
+
+CREATEFRAME                 # while
+DEFVAR TF@a
+MOVE TF@a LF@a
+PUSHFRAME
+LABEL __WHILE_1_1           
+PUSHS LF@a                  # ($a !== null) 
+PUSHS int@0                  
+EQS
+NOTS
+POPS GF@__BOOLCONV                      #
+JUMPIFNEQ __1_1 GF@__BOOLCONV bool@true #
+PUSHS int@1                             #
+JUMP __1_2                              # Konverze bool2int
+LABEL __1_1                             #
+PUSHS int@0                             #
+LABEL __1_2                             #
+PUSHS int@1
+JUMPIFNEQS __WHILE_1_2      # {
+
+PUSHS LF@a                  # $a = $a - 1;
+PUSHS int@1
+SUBS
+POPS LF@a
+
+WRITE LF@a                  # write($a);
+
+JUMP __WHILE_1_1            # }
+LABEL __WHILE_1_2
+POPFRAME
+MOVE LF@a TF@a
+
+WRITE LF@a                  # write($a);
+
+PUSHS int@3                 # $a = 3;
+POPS LF@a
+
+DEFVAR LF@b                 # $b = 4;
+PUSHS int@4
+POPS LF@b
+
+CREATEFRAME                 # while
+DEFVAR TF@a
+MOVE TF@a LF@a
+DEFVAR TF@b
+MOVE TF@b LF@b
+PUSHFRAME
+LABEL __WHILE_2_1
+PUSHS LF@a                  # ($a !== null)
+PUSHS int@0
+EQS
+NOTS
+POPS GF@__BOOLCONV                      #
+JUMPIFNEQ __2_1 GF@__BOOLCONV bool@true #
+PUSHS int@1                             #
+JUMP __2_2                              # Konverze bool2int
+LABEL __2_1                             #
+PUSHS int@0                             #
+LABEL __2_2                             #
+PUSHS int@1
+JUMPIFNEQS __WHILE_2_2      # {
+
+CREATEFRAME                 #while
+DEFVAR TF@a
+MOVE TF@a LF@a
+DEFVAR TF@b
+MOVE TF@b LF@b
+PUSHFRAME
+LABEL __WHILE_3_1
+PUSHS LF@b                  # (b !== 0)
+PUSHS int@1
+EQS               
+NOTS
+POPS GF@__BOOLCONV                      #
+JUMPIFNEQ __3_1 GF@__BOOLCONV bool@true #
+PUSHS int@1                             #
+JUMP __3_2                              # Konverze bool2int
+LABEL __3_1                             #
+PUSHS int@0                             #
+LABEL __3_2                             #
+PUSHS int@1
+JUMPIFNEQS __WHILE_3_2      # {
+
+PUSHS LF@b                  # $b = $b - 1;
+PUSHS int@1
+SUBS
+POPS LF@b
+
+WRITE string@|
+
+
+JUMP __WHILE_3_1            # }
+LABEL __WHILE_3_2
+POPFRAME
+MOVE LF@a TF@a
+MOVE LF@b TF@b
+
+PUSHS LF@a                  # $a = $a - 1;
+PUSHS int@1
+SUBS
+POPS LF@a
+
+JUMP __WHILE_2_1            # }
+LABEL __WHILE_2_2
+POPFRAME
+MOVE LF@a TF@a
+MOVE LF@b TF@b
+
+WRITE LF@a                  # write($a)
+WRITE string@\010           # write("\n")
+WRITE LF@b                  # write("$b)
+WRITE string@\010           # write("\n)
+
+POPFRAME
