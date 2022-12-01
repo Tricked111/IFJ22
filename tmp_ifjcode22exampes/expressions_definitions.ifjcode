@@ -1,0 +1,109 @@
+.IFJcode22
+
+DEFVAR GF@__BOOLCONV
+DEFVAR GF@__CONCAT1
+DEFVAR GF@__CONCAT2
+
+CREATEFRAME
+PUSHFRAME
+
+DEFVAR LF@a # $a =
+PUSHS int@5 # 5
+POPS LF@a   # $a = 5
+
+DEFVAR LF@b # $b =
+PUSHS LF@a  # $a
+POPS LF@b   # $b = $a
+
+DEFVAR LF@c # $c =
+PUSHS LF@b  # $b
+PUSHS int@5 # $b 5
+ADDS        # $b 5 +
+PUSHS LF@a  # $b 5 + $a
+SUBS        # $b 5 + $a -
+POPS LF@c   # $c = $b + 5 - $a
+
+DEFVAR LF@d # $d =
+PUSHS LF@c  # $c
+INT2FLOATS
+PUSHS LF@b  # $c $b
+INT2FLOATS
+PUSHS LF@a  # $c $b $a
+INT2FLOATS
+ADDS        # $c $b $a +
+MULS        # $c $b $a + *
+PUSHS int@5 # $c $b $a + * 5
+INT2FLOATS
+DIVS        # $c $b $a + * 5 /
+POPS LF@d   # $d = $c * ($b + $a) / 5
+
+DEFVAR LF@e # $e =
+PUSHS LF@d  # $d
+PUSHS LF@a  # $d $a
+INT2FLOATS
+ADDS        # $d $a +
+POPS LF@e   # $e = $d + $a
+
+DEFVAR LF@f     # $f =
+PUSHS int@1     # 1
+PUSHS LF@e      # 1 $e
+FLOAT2INTS
+PUSHS int@0     # 1 $e null
+EQS             # 1 $e null ===
+
+POPS GF@__BOOLCONV                      #
+JUMPIFNEQ __1_1 GF@__BOOLCONV bool@true #
+PUSHS int@1                             #
+JUMP __1_2                              # Konverze bool2int
+LABEL __1_1                             #
+PUSHS int@0                             #
+LABEL __1_2                             #
+
+ADDS            # 1 $e null === + 
+POPS LF@f       # $f = 1 + ($e === null) 
+
+DEFVAR LF@i                                 # $i =
+MOVE GF@__CONCAT1 string@abc\010\009def     # "abc\n\tdef"
+MOVE LF@i GF@__CONCAT1                      # $i = "abc\n\tdef"
+
+DEFVAR LF@k                                     # $k =
+MOVE GF@__CONCAT1 LF@i                          # $i
+MOVE GF@__CONCAT2 string@\032ghi                # $i " ghi"
+CONCAT GF@__CONCAT1 GF@__CONCAT1 GF@__CONCAT2   # $i " ghi" .
+MOVE LF@k GF@__CONCAT1                          # $k = $i " ghi" .
+
+DEFVAR LF@j                                     # $j =
+MOVE GF@__CONCAT1 LF@k                          # $k
+MOVE GF@__CONCAT2 LF@i                          # $k $i
+CONCAT GF@__CONCAT1 GF@__CONCAT1 GF@__CONCAT2   # $k $i .
+MOVE GF@__CONCAT2 string@,jkl\010               # $k $i . ",jkl\n"
+CONCAT GF@__CONCAT1 GF@__CONCAT1 GF@__CONCAT2   # $k $i . ",jkl\n" .
+MOVE LF@j GF@__CONCAT1                          # $j = $k $i . "q,jkl\n" .
+
+DEFVAR LF@g                                     # $g =
+MOVE GF@__CONCAT1 LF@j                          # $j
+MOVE GF@__CONCAT2 string@                       # $j null
+CONCAT GF@__CONCAT1 GF@__CONCAT1 GF@__CONCAT2   # $j null .
+MOVE LF@g GF@__CONCAT1                          # $g = $j null .
+
+DEFVAR LF@h                                     # $h =
+PUSHS nil@nil                                   # null
+POPS LF@h                                       # $h = null
+
+DEFVAR LF@l                                     # $l = 
+MOVE GF@__CONCAT1 string@hello                  # "hello"
+MOVE GF@__CONCAT2 string@                       # "hello" $h
+CONCAT GF@__CONCAT1 GF@__CONCAT1 GF@__CONCAT2   # "hello" $h .
+MOVE LF@l GF@__CONCAT1                          # $l = "hello" $h .
+
+PUSHS int@7                                     # 7
+POPS LF@a                                       # $a = 7
+
+PUSHS LF@a    # $a
+PUSHS int@0   # $a null
+ADDS          # $a null +
+POPS LF@a     # $a = $a + null
+
+WRITE LF@a
+
+POPFRAME

@@ -1,0 +1,53 @@
+<assig> ->          --if var is not defined:
+                        DEFVAR LF@[VAR_ID]
+                    <expr>
+
+<expr> ->           --if expr return type is not string:
+                        <stack_expr>
+                    --else
+                        <string_expr>
+
+<stack_expr> ->     --retType = expr return type
+                    --for i to expr size:
+                    --  if expr[i].type = OPERAND:
+                    --      if OPERAND.TYPE == NULL:
+                    --          if retType == int
+                                    PUSHS int@0
+                    --          else
+                                    PUSHS float@0.0
+                    --      else:
+                                PUSHS [OPERAND]
+                    --          if retType != OPERAND.type:
+                                    <conv_stack> 
+                    --  else:
+                            [OPERATOR]S
+                    --      if OPERATOR.type == bool
+                                <conv_bool>
+                    --POPS LF@[VAR_ID]
+
+<string_expr> ->    --if expr[0] == string OPERAND:
+                        MOVE GF@__CONCAT1 [OPERAND]
+                    --else
+                        MOVE GF@__CONCAT1 string@
+                    --for i from 1 to expr size:
+                    --  if expr[i].type = OPERAND:
+                    --      if OPERAND.type = string:
+                                MOVE GF@__CONCAT2 [OPERAND]
+                    --      else:
+                                MOVE GF@__CONCAT2 string@
+                    --  else:
+                        CONCAT GF@__CONCAT1 GF@__CONCAT1 GF@__CONCAT2
+                    MOVE LF@[VAR_ID] GF@__CONCAT1
+
+<conv_stack> ->     --if target type == float and init type == int:
+                        INT2FLOATS
+                    --else if target type == int and init type == float:
+                        FLOAT2INTS
+
+<conv_bool> ->      POPS GF@__BOOLCONV
+                    JUMPIFNEQ __[bconv_id]_1 GF@__BOOLCONV bool@true
+                    PUSHS int@1
+                    JUMP __[bconv_id]_2
+                    LABEL __[bconv_id]_1
+                    PUSHS int@0
+                    LABEL __[bconv_id]_2
