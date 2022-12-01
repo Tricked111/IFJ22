@@ -104,6 +104,21 @@ PUSHS int@0   # $a null
 ADDS          # $a null +
 POPS LF@a     # $a = $a + null
 
-WRITE LF@a
+DEFVAR LF@o 
+PUSHS string@abc
+PUSHS string@abc
+EQS
+
+POPS GF@__BOOLCONV                      #
+JUMPIFNEQ __2_1 GF@__BOOLCONV bool@true #
+PUSHS int@1                             #
+JUMP __2_2                              # Konverze bool2int
+LABEL __2_1                             #
+PUSHS int@0                             #
+LABEL __2_2                             #
+
+POPS LF@o
+
+WRITE LF@o
 
 POPFRAME

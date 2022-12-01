@@ -19,4 +19,6 @@ $l = "hello" . $h           // "hello" $h .
 $a = 7;                     // 7
 $a = $a + null;             // $a null +
 
+$o = "abc" === "abc";       // "abc" "abc" ===
+
 write($a);

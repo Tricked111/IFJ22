@@ -1,3 +1,8 @@
+POZOR:
+    Operator !=== ->    EQS
+                        NOTS
+
+
 <assig> ->          --if var is not defined:
                         DEFVAR LF@[VAR_ID]
                     <expr>
