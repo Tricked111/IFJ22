@@ -70,7 +70,7 @@ DEFVAR LF@k                                     # $k =
 MOVE GF@__CONCAT1 LF@i                          # $i
 MOVE GF@__CONCAT2 string@\032ghi                # $i " ghi"
 CONCAT GF@__CONCAT1 GF@__CONCAT1 GF@__CONCAT2   # $i " ghi" .
-MOVE LF@k GF@__CONCAT1                          # $k = $i " ghi" .
+MOVE LF@k GF@__CONCAT1                          # $k = $i " . ghi"
 
 DEFVAR LF@j                                     # $j =
 MOVE GF@__CONCAT1 LF@k                          # $k

@@ -13,8 +13,8 @@ $k = $i . " ghi";           // $i " ghi" .
 $j = $k . $i . ",jkl\n";    // $f $i . ",jkl\n" . 
 $g = $j . null              // $j null .
 
-$h = null                   // null
-$l = "hello" . $h           // "hello" $h .
+$h = null;                  // null
+$l = "hello" . $h;          // "hello" $h .
 
 $a = 7;                     // 7
 $a = $a + null;             // $a null +

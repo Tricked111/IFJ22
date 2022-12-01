@@ -25,8 +25,8 @@ JUMP __1_2                              # Konverze bool2int
 LABEL __1_1                             #
 PUSHS int@0                             #
 LABEL __1_2                             #
-PUSHS int@1
-JUMPIFNEQS __WHILE_1_2      # {
+PUSHS int@0
+JUMPIFEQS __WHILE_1_2      # {
 
 PUSHS LF@a                  # $a = $a - 1;
 PUSHS int@1
@@ -67,8 +67,8 @@ JUMP __2_2                              # Konverze bool2int
 LABEL __2_1                             #
 PUSHS int@0                             #
 LABEL __2_2                             #
-PUSHS int@1
-JUMPIFNEQS __WHILE_2_2      # {
+PUSHS int@0
+JUMPIFEQS __WHILE_2_2      # {
 
 CREATEFRAME                 #while
 DEFVAR TF@a
@@ -88,16 +88,15 @@ JUMP __3_2                              # Konverze bool2int
 LABEL __3_1                             #
 PUSHS int@0                             #
 LABEL __3_2                             #
-PUSHS int@1
-JUMPIFNEQS __WHILE_3_2      # {
+PUSHS int@0
+JUMPIFEQS __WHILE_3_2      # {
 
-PUSHS LF@b                  # $b = $b - 1;
+PUSHS LF@b                 # $b = $b - 1;
 PUSHS int@1
 SUBS
 POPS LF@b
 
 WRITE string@|
-
 
 JUMP __WHILE_3_1            # }
 LABEL __WHILE_3_2
