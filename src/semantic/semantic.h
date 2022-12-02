@@ -12,14 +12,22 @@
 #define SEMANTIC_H
 
 #include <stdio.h>
-#include "../symtable/symtable.h"
 #include "../data/data.h"
 #include "../scanner/scanner.h"
+#include "../expressions/expr.h"
 
-uint32_t getKey(const char *str);
-TypesInd typeIndChoice(token_t token);
-int varToken(const program_t *program, int poss, Symtable *table, token_t token);
-int funCallToken(const program_t *program, int poss, Symtable *table, token_t token);
+typedef enum {
+    S_START,
+    S_END,
+    S_FUN_RET,
+    S_GET_PARAM,
+    S_VAR_ROW,
+    S_ROW_END,
+    S_FUN_CALL
+} SemStates;
+
+int varToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local);
+int funCallToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local);
 int semanticControl(const program_t *program);
 
 typedef enum {

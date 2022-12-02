@@ -45,7 +45,8 @@ typedef enum {
     FLOAT_IND,
     STRING_IND,
     NULL_IND,
-    VOID_IND
+    VOID_IND,
+    BOOL_IND
 } TypesInd;
 
 //Indexes of tokens, which can be used in rules.

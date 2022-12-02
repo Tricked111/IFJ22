@@ -3,6 +3,7 @@
  *                                 expr.c
  * 
  *      Authors: Nikita Kotvitskiy (xkotvi01)
+                 Erik Hrubý        (xhruby30)   
  *      Purpose: Definitions of functions used for expressions transformation to postfix notation.
  * 
  *                        Last change: 29. 11. 2022
@@ -108,3 +109,115 @@ bool lowerOper(token_t oper1, token_t oper2) {
         return true;
     return false;   
 }
+
+int evaluateExpression(Symtable * table, pfExpr_t * expr, TypesInd * type) {
+    typeStack_t stack;
+    typeStackInit(&stack); 
+    // printf("Eval start-->size %d: \n", expr->size);   
+
+    for (int i = 0; i < expr->size; i++) {
+        token_t token =  expr->expr[i]; 
+
+        if (token.type == OPER) { 
+            // printf("OPERATOR:\n");
+            TypesInd operand2 = typeStackPop(&stack);
+            TypesInd operand1 = typeStackPop(&stack);
+
+            long long operator = token.numericData.ivalue;            
+            if (operator == ADD_IND || operator == SUB_IND || operator == MUL_IND) {
+
+                if (operand1 == STRING_IND || operand2 == STRING_IND) {
+                    return 7;
+                } else if (operand1 == FLOAT_IND || operand2 == FLOAT_IND) {
+                    typeStackPush(&stack, FLOAT_IND);
+                } else {
+                    typeStackPush(&stack, INT_IND);
+                }
+
+            } else if (operator == DIV_IND) {
+
+                if (operand1 == STRING_IND || operand2 == STRING_IND) {
+                    return 7;
+                } else {
+                    typeStackPush(&stack, FLOAT_IND);
+                }
+
+            } else if(operator == CON_IND) {
+
+                if (operand1 == INT_IND || operand2 == INT_IND || operand1 == FLOAT_IND || operand2 == FLOAT_IND) {
+                    return 7;
+                } else {
+                    typeStackPush(&stack, STRING_IND);
+                }
+            } else {
+                typeStackPush(&stack, BOOL_IND);
+            }                        
+        } else {
+            
+            if (token.type == VAR) {                
+                if(symtableSearch(table, getKey(token.textData.str))) {
+                    typeStackPush(&stack, (symtableGet(table, getKey(token.textData.str)))->dtype.var_type);
+                } else {                    
+                    return 5;
+                }
+            } else {
+                typeStackPush(&stack, typeIndChoice(token));               
+            }                                    
+        }
+    }
+
+    *type = typeStackPop(&stack);
+    typeStackFree(&stack);
+    return 0;
+}
+
+
+void typeStackInit(typeStack_t * stack) {
+    stack->data = malloc(0);
+    stack->size = 0;
+}
+void typeStackPush(typeStack_t * stack, TypesInd type) {
+    stack->size++;
+    stack->data = realloc(stack->data, sizeof(TypesInd) * stack->size);    
+    stack->data[stack->size - 1] = type;
+    // printf("pushed %i\n", type); 
+}
+
+TypesInd typeStackPop(typeStack_t * stack) {
+    TypesInd type = stack->data[stack->size - 1];
+    stack->size--;
+    stack->data = realloc(stack->data, sizeof(TypesInd) * stack->size);
+    return type;
+}
+
+void typeStackFree(typeStack_t * stack) {
+    free(stack->data);
+}
+
+TypesInd typeIndChoice(token_t token) {
+    switch(token.type) {
+        case INT:
+            return INT_IND;
+        case FLOAT:
+            return FLOAT_IND;
+        case STRING:
+            return STRING_IND;        
+        default:
+            return NULL_IND; 
+    }
+}
+
+uint32_t getKey(const char *str) { //Source: https://en.wikipedia.org/wiki/Jenkins_hash_function   
+    uint32_t hash = 0;
+    size_t i = 0;
+    while (str[i]) {
+        hash += str[i];
+        hash += hash << 10;
+        hash ^= hash >> 6;
+        i++;
+    }
+    hash += hash << 3;
+    hash ^= hash >> 11;
+    hash += hash << 15;
+    return hash;
+} 
