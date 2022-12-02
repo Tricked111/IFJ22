@@ -24,14 +24,16 @@ int varToken(const program_t *program, int poss, Symtable *globalTable, token_t 
     }
 
     int err = 0;
+    TypesInd expType;
+    pfExpr_t exp;
     switch(program->tokens[poss].type) {            //fun, (int, float, string); alebo vyraz, var; alebo var vyraz
         case FUN:
             err = funCallToken(program, poss+2, globalTable, program->tokens[poss], localTable, local);
             if(err != 0) {
                 return err;
             } 
-            TypesInd retype = symtableGet(globalTable, getKey(program->tokens[poss].textData.str))->dtype.func_type.retype;
-            if(retype == VOID_IND) {
+            TypesInd retype = symtableGet(globalTable, key)->dtype.func_type.retype;
+            if(retype == VOID_IND) {    
                 retype = NULL_IND;
             }
             add_var(data, retype);
@@ -40,37 +42,20 @@ int varToken(const program_t *program, int poss, Symtable *globalTable, token_t 
             }
             break;
 
-        case TYPE:
-            return 8;
-            break;
-
-        case VAR:
-            if(program->tokens[poss+1].type == SEMICOLON) {
-
-                
-                if(!symtableSearch(table, key)) {
-                    return 5;
-                }
-                
-                add_var(data, (symtableGet(table, key))->dtype.var_type);
-                if(insertSymtable(table, getKey(token.textData.str), data)) {
-                    return 99;
-                }
-               
-                               
-            } else {    //vyraz
-                
-            }
-            break;
         default:
-            if(program->tokens[poss+1].type == SEMICOLON) {
-                add_var(data, typeIndChoice(program->tokens[poss]));
-                if(insertSymtable(table, getKey(token.textData.str), data)) {
+            exp = makeExpression(program, poss);
+            err = evaluateExpression(table, &exp, &expType);
+            if(err != 0) {
+                return err;
+            }
+
+            if(expType == BOOL_IND) {
+                return 8;
+            }
+
+            add_var(data, expType);
+            if(insertSymtable(table, getKey(token.textData.str), data)) {
                     return 99;
-                }
-                
-            } else {    //vyraz
-                
             }
             break;
 
@@ -93,6 +78,10 @@ int funCallToken(const program_t *program, int poss, Symtable *globalTable, toke
     SymtableData *data = symtableGet(globalTable, getKey(token.textData.str));
     TypesInd *funParam = return_param_func(*data);
     size_t count = 0;
+
+    if(strcmp(token.textData.str, "write") == 0) {
+        return 0;
+    }
     
     while(program->tokens[poss].type != BR_C) {
 
@@ -109,7 +98,7 @@ int funCallToken(const program_t *program, int poss, Symtable *globalTable, toke
                 paramVar = symtableGet(table, key);
             }
             
-            if(paramVar->dtype.var_type != funParam[count]) {
+            if(paramVar->dtype.var_type != funParam[count]) {       //?-null hodnota
                 return 4;
             }
         } else {
@@ -145,8 +134,10 @@ void printAllFuncParams(Symtable funcTable) {
 int semanticControl(const program_t *program) {
     //Symtable globalTable = NULL;
     bool local = false;
+    bool quest = false;
     int bracket = 0;
     pfExpr_t expression;
+    TypesInd expType;
 
     Symtable funcTable;
     int getFunTableRet = getFunTable(program, &funcTable);
@@ -172,19 +163,18 @@ int semanticControl(const program_t *program) {
     SemStates state = S_START;
     SymtableData *data;
     token_t tok;
-    
+ 
     for (int i = 0; i < program->tokenCount; i++) {     //dalej key words a vyraz bez priradenia (string + int), return, vyraz
         tok = program->tokens[i];
-        pfExpr_t expr;
         switch (state) {
-            case S_START:                
+            case S_START: 
                 if (tok.type == END || tok.type == PHP_END) {
                     state = S_END;
                 } else if (tok.type == KW && tok.numericData.ivalue == (long long)KW_FUNC_IND) {    // } poriesit koniec funkcie- vypnut local
                     // free localTable
                     localTable = NULL;
-                    funKey = getKey(tok.textData.str);
                     state = S_GET_PARAM;
+                    funKey = getKey(program->tokens[i+1].textData.str);
                 } else if (tok.type == VAR) {
                     state = S_VAR_ROW;
                 } else if (tok.type == FUN) {
@@ -196,20 +186,38 @@ int semanticControl(const program_t *program) {
                 } else if (tok.type == KW && tok.numericData.ivalue == (long long)KW_ELSE_IND) {
                     state = S_ELSE;
                 } else if(tok.type == KW && tok.numericData.ivalue == (long long)KW_RET_IND) {
-                    wasReturn = true;
+                    if(local) {
+                        wasReturn = true;
+                    }
                     state = S_RET;
-                } else if(tok.type == CB_C) {
-                    if(!bracket) {  //je to zatvorka funkcie, nefunkcne local
-                        if(!wasReturn) {
+                } else if(tok.type == CB_C) { 
+                    if(bracket == 0) {          //je to zatvorka funkcie
+                        if(!wasReturn) {        
                             if(symtableGet(&funcTable, funKey)->dtype.func_type.retype != VOID_IND) {
                                 return 4;
                             }
+                        }   
 
-                        }
-                    } else {    //koniec local table
-                        bracket--;
+                        local = false;
+                        quest = false;
+                        wasReturn = false;
+
+                    } else {    
+                        bracket--;  
+                    }   
+                } else if(tok.type == INT || tok.type == STRING || tok.type == FLOAT || (tok.type == TYPE && strcmp(tok.textData.str, "null") == 0)) {
+                    expression = makeExpression(program, i);   
+                    if(local) {
+                        err = evaluateExpression(&localTable, &expression, &expType);
+                    } else {
+                        err = evaluateExpression(&funcTable, &expression, &expType);
                     }
-                } 
+                        
+                    if(err != 0) {
+                        return err;
+                    }
+                    state = S_ROW_END;
+                }   
                 
                 continue;
 
@@ -236,17 +244,42 @@ int semanticControl(const program_t *program) {
                     state = S_ROW_END;
                 } else {
                     expression = makeExpression(program, i);    //int, float, string/ vyraz, zavolat erika, vyhodi TypesInd
-                    if(local && (symtableGet(&funcTable, funKey)->dtype.func_type.retype)) {
-                        //vyhodnotit vyhodeny TypesInd
-                        return 4;
+                    if(local) {
+                        err = evaluateExpression(&localTable, &expression, &expType);
+                    } else {
+                        err = evaluateExpression(&funcTable, &expression, &expType);
+                    }
+                        
+                    if(err != 0) {
+                        return err;
+                    }
+                    
+                    if(local && (symtableGet(&funcTable, funKey)->dtype.func_type.retype != expType)) {
+                        if(quest) {
+                            if(expType != NULL_IND) {
+                                return 4;
+                            }
+                
+                        } else {
+                            return 4;
+                        }
                     }
                     state = S_ROW_END;
                 }
                 
                 continue;              
 
-            case S_WHILE_IF:   //vyraz
-                expression = makeExpression(program, i+1);  //erik funkcia  //vytvorit local table
+            case S_WHILE_IF: 
+                expression = makeExpression(program, i+1); 
+                if(local) {
+                    err = evaluateExpression(&localTable, &expression, &expType);
+                } else {
+                    err = evaluateExpression(&funcTable, &expression, &expType);
+                }
+                    
+                if(err != 0) {
+                    return err;
+                }
                 state = S_CB_O;
                 continue;
 
@@ -255,7 +288,7 @@ int semanticControl(const program_t *program) {
                 state = S_START;
                 continue;
 
-            case S_FUN_CALL:
+            case S_FUN_CALL:    
                 err = funCallToken(program, i+1, &funcTable, program->tokens[i-1], &localTable, local);
                 if(err != 0) {
                     return err;
@@ -269,16 +302,18 @@ int semanticControl(const program_t *program) {
                     if(err != 0) {
                         return err;
                     }                    
-                } else {      // $a + $b; bez priradenia poriesit
+                } else {      // $a + $b; bez priradenia 
                     
-                    // expr = makeExpression(program, i-1);
-                    // for (int i = 0; i < expr.size; i++) {
-                    //     printf("%s \n", expr.expr[i].textData.str);
-                    // }
-                    // TypesInd type;
-                    // evaluateExpression(&globalTable ,&expr, &type);
-                    // printf("Resolved:%i\n", type);
-
+                    expression = makeExpression(program, i-1);
+                    if(local) {
+                        err = evaluateExpression(&localTable, &expression, &expType);
+                    } else {
+                        err = evaluateExpression(&funcTable, &expression, &expType);
+                    }
+                    
+                    if(err != 0) {
+                        return err;
+                    }
                 }
                 state = S_ROW_END;
                 continue;
@@ -288,7 +323,7 @@ int semanticControl(const program_t *program) {
                     if ((data = malloc(sizeof(SymtableData))) == NULL) {
                         return 99;
                     }
-                    add_var(data, (TypesInd)tok.numericData.ivalue);
+                    add_var(data, (TypesInd) tok.numericData.ivalue);
                 }
                 else if (tok.type == VAR) {
                     if(insertSymtable(&localTable, getKey(tok.textData.str), data)) {
@@ -300,7 +335,9 @@ int semanticControl(const program_t *program) {
                 continue;
 
             case S_FUN_RET:
-                if(tok.type == CB_O) {
+                if(tok.type == QUEST) {
+                    quest = true;
+                } else if(tok.type == CB_O) {
                     local = true;
                     state = S_START;
                 } 
@@ -331,6 +368,7 @@ int semanticControl(const program_t *program) {
 
 int getFunTable(const program_t * program, Symtable * funcTable) {
     Symtable newFuncTable = NULL;
+    built_function(&newFuncTable);
     FunDefsStates state = SF_START;
 
     uint32_t key; 
@@ -380,9 +418,10 @@ int getFunTable(const program_t * program, Symtable * funcTable) {
                     state = SF_SKIP_COLON;
                 continue;
             case SF_GET_TYPE:
-                if (program->tokens[i].type == QUEST)
-                    state = SF_GET_QUEST_TYPE;
-                else if (program->tokens[i].type == TYPE) {
+                //if (program->tokens[i].type == QUEST)
+                  //  state = SF_GET_QUEST_TYPE;
+                //else 
+                if (program->tokens[i].type == TYPE) {
                     add_retype(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue);
                     state = SF_FUN_START;
                 }

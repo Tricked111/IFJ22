@@ -12,6 +12,7 @@
 #define SEMANTIC_H
 
 #include <stdio.h>
+#include <string.h>
 #include "../data/data.h"
 #include "../scanner/scanner.h"
 #include "../expressions/expr.h"

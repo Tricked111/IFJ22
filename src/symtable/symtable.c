@@ -229,7 +229,7 @@ void built_function(Symtable * table){
 
     SymtableData write;
     add_func(&write);
-    add_retype(&write,FLOAT_IND);
+    add_retype(&write, VOID_IND);
     if(insertSymtable(&(*table),get_key("write"),&write)){
         fprintf(stderr,"Error insert table in build function!");
     }
