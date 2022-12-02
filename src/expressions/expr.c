@@ -113,13 +113,13 @@ bool lowerOper(token_t oper1, token_t oper2) {
 int evaluateExpression(Symtable * table, pfExpr_t * expr, TypesInd * type) {
     typeStack_t stack;
     typeStackInit(&stack); 
-    printf("Eval start-->size %d: \n", expr->size);   
+    // printf("Eval start-->size %d: \n", expr->size);   
 
     for (int i = 0; i < expr->size; i++) {
         token_t token =  expr->expr[i]; 
 
         if (token.type == OPER) { 
-            printf("OPERATOR:\n");
+            // printf("OPERATOR:\n");
             TypesInd operand2 = typeStackPop(&stack);
             TypesInd operand1 = typeStackPop(&stack);
 
@@ -149,6 +149,8 @@ int evaluateExpression(Symtable * table, pfExpr_t * expr, TypesInd * type) {
                 } else {
                     typeStackPush(&stack, STRING_IND);
                 }
+            } else {
+                typeStackPush(&stack, BOOL_IND);
             }                        
         } else {
             
@@ -159,7 +161,7 @@ int evaluateExpression(Symtable * table, pfExpr_t * expr, TypesInd * type) {
                     return 5;
                 }
             } else {
-                typeStackPush(&stack, (TypesInd)token.numericData.ivalue);               
+                typeStackPush(&stack, typeIndChoice(token));               
             }                                    
         }
     }
@@ -178,7 +180,7 @@ void typeStackPush(typeStack_t * stack, TypesInd type) {
     stack->size++;
     stack->data = realloc(stack->data, sizeof(TypesInd) * stack->size);    
     stack->data[stack->size - 1] = type;
-    printf("pushed %i\n", type); 
+    // printf("pushed %i\n", type); 
 }
 
 TypesInd typeStackPop(typeStack_t * stack) {
@@ -205,8 +207,6 @@ TypesInd typeIndChoice(token_t token) {
     }
 }
 
-
-
 uint32_t getKey(const char *str) { //Source: https://en.wikipedia.org/wiki/Jenkins_hash_function   
     uint32_t hash = 0;
     size_t i = 0;
@@ -221,5 +221,3 @@ uint32_t getKey(const char *str) { //Source: https://en.wikipedia.org/wiki/Jenki
     hash += hash << 15;
     return hash;
 } 
-
-
