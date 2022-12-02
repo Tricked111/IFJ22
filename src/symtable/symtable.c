@@ -57,6 +57,18 @@ void add_func_param(SymtableData *data,TypesInd param){
     printf("============\n");*/
 }
 
+/**
+ * @brief Adds a quest bool value for func'param to the structure SymtableData
+ * @param data pointers to structures SymtableData
+ * @param param the param that will be assigned
+ */ 
+void add_func_param_quest(SymtableData *data, bool isQuest) {
+    if(data->dtype.func_type.lenght == data->dtype.func_type.size){
+        data->dtype.func_type.size *= 2;
+        data->dtype.func_type.quest = realloc(data->dtype.func_type.quest,data->dtype.func_type.size * (sizeof(bool)));
+    }
+    data->dtype.func_type.quest[data->dtype.func_type.lenght++] = isQuest;
+}
 
 
 /**

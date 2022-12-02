@@ -395,13 +395,33 @@ int getFunTable(program_t * program, Symtable * funcTable) {
                 add_func(newFuncData);
                 state = SF_SKIP_BR;
                 continue;
+            case SF_SKIP_BR:
+                printf("%s\n", program->tokens[i].textData.str);
+                if(program->tokens[i].type == BR_O) {
+                    continue;
+                } else if(program->tokens[i].type == QUEST) {
+                    add_func_param_quest(newFuncData, true);
+                    state = SF_GET_PARAM;
+                    continue;
+                } else {
+                    printf("AAAAAAAAAA");
+                    add_func_param_quest(newFuncData, false);
+                    if (program->tokens[i].type == TYPE) {
+                        add_func_param(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue);
+                        state = SF_SKIP_NAME;
+                        continue;
+                    }
+                    else if (program->tokens[i].type == BR_C)
+                        state = SF_GET_TYPE;
+                    continue;
+                }
             case SF_GET_PARAM:
                 if (program->tokens[i].type == TYPE) {
                     add_func_param(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue);
                     state = SF_SKIP_NAME;
                 }
                 else if (program->tokens[i].type == BR_C)
-                    state = SF_SKIP_COLON;
+                    state = SF_GET_TYPE;
                 continue;
             case SF_SKIP_NAME:
                 name = &(program->tokens[i].textData);
@@ -413,9 +433,9 @@ int getFunTable(program_t * program, Symtable * funcTable) {
                 continue;
             case SF_CHECK_NEXT:
                 if (program->tokens[i].type == COMMA)
-                    state = SF_GET_PARAM;
+                    state = SF_SKIP_BR;
                 else if (program->tokens[i].type == BR_C)
-                    state = SF_SKIP_COLON;
+                    state = SF_GET_TYPE;
                 continue;
             case SF_GET_TYPE:
                 //if (program->tokens[i].type == QUEST)

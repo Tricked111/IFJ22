@@ -36,6 +36,7 @@ int funCallToken(program_t *program, int poss, Symtable *globalTable, token_t to
 int semanticControl(program_t *program);
 
 typedef enum {
+    SF_QUEST,
     SF_START,
     SF_END,
     SF_FUN_DEC,
@@ -43,7 +44,6 @@ typedef enum {
     SF_GET_PARAM,
     SF_SKIP_NAME,
     SF_CHECK_NEXT,
-    SF_SKIP_COLON,
     SF_GET_TYPE,
     SF_GET_QUEST_TYPE,
     SF_FUN_START

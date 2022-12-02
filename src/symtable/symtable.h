@@ -41,6 +41,7 @@ typedef enum sym_type{
 typedef struct Func_dtype_t{
     TypesInd retype;
     TypesInd *func_params;
+    bool *quest;
     size_t lenght;
     size_t size;
 }func_dtype_t;
@@ -94,6 +95,13 @@ void add_func(SymtableData *data);
  * @param param the param that will be assigned
  */ 
 void add_func_param(SymtableData *data,TypesInd param);
+
+/**
+ * @brief Adds a quest bool value for func'param to the structure SymtableData
+ * @param data pointers to structures SymtableData
+ * @param param the param that will be assigned
+ */ 
+void add_func_param_quest(SymtableData *data, bool isQuest);
 
 
 
