@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
-function ahoj(int $c) : int {
+null === 6;
+$a = null;
+ahoj($a, null);
+function ahoj(?int $c, ?int $h) : int {
     return $c;  
 }
 

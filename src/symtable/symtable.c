@@ -34,6 +34,7 @@ void add_func(SymtableData *data){
     data->dtype.func_type.size = BASE_SIZE_ARRAY;
     data->dtype.func_type.lenght = 0;
     data->dtype.func_type.func_params = (TypesInd*) malloc(sizeof(TypesInd) * data->dtype.func_type.size);
+    data->dtype.func_type.quest = (int*) malloc(sizeof(int) * data->dtype.func_type.size);
 }
 
 
@@ -44,30 +45,20 @@ void add_func(SymtableData *data){
  * @param param the param that will be assigned
  */ 
 
-void add_func_param(SymtableData *data,TypesInd param){
+void add_func_param(SymtableData *data,TypesInd param, int isQuest){
     if(data->dtype.func_type.lenght == data->dtype.func_type.size){
         data->dtype.func_type.size *= 2;
         data->dtype.func_type.func_params = realloc(data->dtype.func_type.func_params,data->dtype.func_type.size * (sizeof(TypesInd)));
+        data->dtype.func_type.quest = realloc(data->dtype.func_type.quest,data->dtype.func_type.size * (sizeof(bool)));
     }
-    data->dtype.func_type.func_params[data->dtype.func_type.lenght++] = param;
+    data->dtype.func_type.func_params[data->dtype.func_type.lenght] = param;
+    data->dtype.func_type.quest[data->dtype.func_type.lenght] = isQuest;
+    data->dtype.func_type.lenght++;
     /*printf("============\n");
     printf("%d\n", (int)data->dtype.func_type.lenght);
     for (int i = 0; i < (int)data->dtype.func_type.lenght; i++)
         printf("%d\n", (int)data->dtype.func_type.func_params[i]);
     printf("============\n");*/
-}
-
-/**
- * @brief Adds a quest bool value for func'param to the structure SymtableData
- * @param data pointers to structures SymtableData
- * @param param the param that will be assigned
- */ 
-void add_func_param_quest(SymtableData *data, bool isQuest) {
-    if(data->dtype.func_type.lenght == data->dtype.func_type.size){
-        data->dtype.func_type.size *= 2;
-        data->dtype.func_type.quest = realloc(data->dtype.func_type.quest,data->dtype.func_type.size * (sizeof(bool)));
-    }
-    data->dtype.func_type.quest[data->dtype.func_type.lenght++] = isQuest;
 }
 
 
@@ -123,6 +114,10 @@ int insertSymtable(Symtable *table,uint32_t key,SymtableData * data){
 
 TypesInd * return_param_func(SymtableData data){
     return data.dtype.func_type.func_params;
+}
+
+int * return_quest_func(SymtableData data) {
+    return data.dtype.func_type.quest;
 }
 
 
@@ -222,7 +217,7 @@ void built_function(Symtable * table){
 
     SymtableData strlen;
     add_func(&strlen);
-    add_func_param(&strlen,STRING_IND);
+    add_func_param(&strlen,STRING_IND, 0);
     add_retype(&strlen,INT_IND);
     if(insertSymtable(&(*table),get_key("strlen"),&strlen)){
         fprintf(stderr,"Error insert table in build function!");
@@ -230,9 +225,9 @@ void built_function(Symtable * table){
 
     SymtableData substring;
     add_func(&substring);
-    add_func_param(&substring,STRING_IND);
-    add_func_param(&substring,INT_IND);
-    add_func_param(&substring,INT_IND);
+    add_func_param(&substring,STRING_IND, 0);
+    add_func_param(&substring,INT_IND, 0);
+    add_func_param(&substring,INT_IND, 0);
     add_retype(&substring,STRING_IND);
     if(insertSymtable(&(*table),get_key("substring"),&substring)){
         fprintf(stderr,"Error insert table in build function!");
@@ -248,7 +243,7 @@ void built_function(Symtable * table){
 
     SymtableData ord;
     add_func(&ord);
-    add_func_param(&ord,STRING_IND);
+    add_func_param(&ord,STRING_IND, 0);
     add_retype(&ord,INT_IND);
     if(insertSymtable(&(*table),get_key("ord"),&ord)){
         fprintf(stderr,"Error insert table in build function!");
@@ -256,7 +251,7 @@ void built_function(Symtable * table){
 
     SymtableData chr;
     add_func(&chr);
-    add_func_param(&chr,INT_IND);
+    add_func_param(&chr,INT_IND, 0);
     add_retype(&chr,STRING_IND);
     if(insertSymtable(&(*table),get_key("chr"),&chr)){
         fprintf(stderr,"Error insert table in build function!");
