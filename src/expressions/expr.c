@@ -49,7 +49,7 @@ pfExpr_t makeExpression(program_t * prog, int startIndex) {
     expr.size = 0;
     stack_t stack;
     stackInit(&stack);
-    int brokes;
+    int brokes = 0;
 
     while (1) {
         TokenType tt = prog->tokens[startIndex].type;
@@ -69,6 +69,7 @@ pfExpr_t makeExpression(program_t * prog, int startIndex) {
         }
         else if (tt == BR_C && brokes) {
             token_t tok;
+            brokes--;
             while ((tok = stackPop(&stack)).type != BR_O)
                 exprAdd(&expr, tok);
         }

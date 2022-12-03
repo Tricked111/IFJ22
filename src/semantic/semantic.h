@@ -12,6 +12,7 @@
 #define SEMANTIC_H
 
 #include <stdio.h>
+#include <string.h>
 #include "../data/data.h"
 #include "../scanner/scanner.h"
 #include "../expressions/expr.h"
@@ -23,7 +24,11 @@ typedef enum {
     S_GET_PARAM,
     S_VAR_ROW,
     S_ROW_END,
-    S_FUN_CALL
+    S_FUN_CALL,
+    S_WHILE_IF,
+    S_CB_O,
+    S_ELSE,
+    S_RET
 } SemStates;
 
 int varToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local);
