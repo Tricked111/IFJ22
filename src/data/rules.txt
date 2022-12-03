@@ -12,7 +12,9 @@
 <prog-block>        -> <expr>                                                       |   |
 <dec-params>        -> )                                                            |   |
 <dec-params>        -> type varID <dec-params-2>                                    |   |
+<dec-params>        -> ? type varID <dec-params-2>                                  |   |
 <dec-params-2>      -> , type varID <dec-params-2>                                  |   |
+<dec-params-2>      -> , ? type varID <dec-params-2>                                |   |
 <dec-params-2>      -> )                                                            |   |
 <func>              -> ? type { <constr-st-list>                                    |   |
 <func>              -> type { <constr-st-list>                                      |   |
@@ -32,8 +34,7 @@
 <params>            -> <params-2> ;                                                 |   |
 <params-2>          -> const <params-3>                                             |   |
 <params-2>          -> varID <params-3>                                             |   |
-<params-2>          -> - const <params-3>                                           |   |
-<params-2>          -> - varID <params-3>                                           |   |
+<params-2>          -> null <params-3>                                              |   |
 <params-3>          -> )                                                            |   |
 <params-3>          -> , <params-2>                                                 |   |
 <expr>              -> const <expr-2>                                               |   |

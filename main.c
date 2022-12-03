@@ -109,7 +109,7 @@ int main()
     //printProgramTokens(&program);
     retValue = parseProgram(&program);
     if (retValue) {        
-        //printf("%d\n", retValue);
+        //printf("PARSE: %d\n", retValue);
         return retValue;
     }
 

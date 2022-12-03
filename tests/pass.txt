@@ -1,10 +1,9 @@
 <?php
 declare(strict_types=1);
-$b = ahoj(3);
-$a = $b;
-ahoj(3);
-function ahoj(int $c) : void {
-    $c === 3;
-   
+null === 6;
+$a = null;
+ahoj($a, null);
+function ahoj(?int $c, ?int $h) : int {
+    return $c;  
 }
-$a = $b;
+

@@ -26,7 +26,7 @@ int varToken(program_t *program, int poss, Symtable *globalTable, token_t token,
     int err = 0;
     TypesInd expType;
     pfExpr_t exp;
-    switch(program->tokens[poss].type) {            //fun, (int, float, string); alebo vyraz, var; alebo var vyraz
+    switch(program->tokens[poss].type) {            
         case FUN:
             err = funCallToken(program, poss+2, globalTable, program->tokens[poss], localTable, local);
             if(err != 0) {
@@ -77,13 +77,14 @@ int funCallToken(program_t *program, int poss, Symtable *globalTable, token_t to
     }
     SymtableData *data = symtableGet(globalTable, getKey(token.textData.str));
     TypesInd *funParam = return_param_func(*data);
+    int *funQuest = return_quest_func(*data); 
     size_t count = 0;
 
     if(strcmp(token.textData.str, "write") == 0) {
         return 0;
     }
     
-    while(program->tokens[poss].type != BR_C) {
+    while(program->tokens[poss].type != BR_C) {      
 
         if((count + 1) > data->dtype.func_type.lenght) {    
             return 4;
@@ -98,12 +99,20 @@ int funCallToken(program_t *program, int poss, Symtable *globalTable, token_t to
                 paramVar = symtableGet(table, key);
             }
             
-            if(paramVar->dtype.var_type != funParam[count]) {       //?-null hodnota
-                return 4;
+            if(paramVar->dtype.var_type != funParam[count]) {       
+                if(paramVar->dtype.var_type == NULL_IND && funQuest[count] == 1) {
+                } else {
+                    return 4;
+                }
             }
+        } else if(program->tokens[poss].type == COMMA) {
+            count--;
         } else {
             if(typeIndChoice(program->tokens[poss]) != funParam[count]) {
-                return 4;
+                if(typeIndChoice(program->tokens[poss]) == NULL_IND && funQuest[count] == 1) {
+                } else {
+                    return 4;
+                }
             }                   
         }
 
@@ -132,7 +141,6 @@ void printAllFuncParams(Symtable funcTable) {
 }*/
 
 int semanticControl(program_t *program) {
-    //Symtable globalTable = NULL;
     bool local = false;
     bool quest = false;
     int bracket = 0;
@@ -144,18 +152,6 @@ int semanticControl(program_t *program) {
     if (getFunTableRet)
         return getFunTableRet;
 
-   /** 
-    SymtableData *data;
-    if ((data = malloc(sizeof(SymtableData))) == NULL) {
-                        return 99;
-    }
-    add_func(data);
-    add_func_param(data, INT_IND);
-    add_retype(data, INT_IND);
-    uint32_t k = getKey("ahoj");
-    insertSymtable(&funcTable, k, data); **/
-
-
     Symtable localTable = NULL;
     int err;
     bool wasReturn = false;
@@ -164,14 +160,13 @@ int semanticControl(program_t *program) {
     SymtableData *data;
     token_t tok;
  
-    for (int i = 0; i < program->tokenCount; i++) {     //dalej key words a vyraz bez priradenia (string + int), return, vyraz
+    for (int i = 0; i < program->tokenCount; i++) {    
         tok = program->tokens[i];
         switch (state) {
             case S_START: 
                 if (tok.type == END || tok.type == PHP_END) {
                     state = S_END;
-                } else if (tok.type == KW && tok.numericData.ivalue == (long long)KW_FUNC_IND) {    // } poriesit koniec funkcie- vypnut local
-                    // free localTable
+                } else if (tok.type == KW && tok.numericData.ivalue == (long long)KW_FUNC_IND) {    
                     localTable = NULL;
                     state = S_GET_PARAM;
                     funKey = getKey(program->tokens[i+1].textData.str);
@@ -367,7 +362,7 @@ int semanticControl(program_t *program) {
 }
 
 int getFunTable(program_t * program, Symtable * funcTable) {
-    Symtable newFuncTable = NULL;
+    Symtable newFuncTable = NULL;   
     built_function(&newFuncTable);
     FunDefsStates state = SF_START;
 
@@ -395,13 +390,29 @@ int getFunTable(program_t * program, Symtable * funcTable) {
                 add_func(newFuncData);
                 state = SF_SKIP_BR;
                 continue;
+            case SF_SKIP_BR:
+                if(program->tokens[i].type == BR_O) {
+                    continue;
+                } else if(program->tokens[i].type == QUEST) {
+                    state = SF_GET_PARAM;
+                    continue;
+                } else {
+                    if (program->tokens[i].type == TYPE) {
+                        add_func_param(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue, 0);
+                        state = SF_SKIP_NAME;
+                        continue;
+                    }
+                    else if (program->tokens[i].type == BR_C)
+                        state = SF_GET_TYPE;
+                    continue;
+                }
             case SF_GET_PARAM:
                 if (program->tokens[i].type == TYPE) {
-                    add_func_param(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue);
+                    add_func_param(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue, 1);
                     state = SF_SKIP_NAME;
                 }
                 else if (program->tokens[i].type == BR_C)
-                    state = SF_SKIP_COLON;
+                    state = SF_GET_TYPE;
                 continue;
             case SF_SKIP_NAME:
                 name = &(program->tokens[i].textData);
@@ -413,9 +424,9 @@ int getFunTable(program_t * program, Symtable * funcTable) {
                 continue;
             case SF_CHECK_NEXT:
                 if (program->tokens[i].type == COMMA)
-                    state = SF_GET_PARAM;
+                    state = SF_SKIP_BR;
                 else if (program->tokens[i].type == BR_C)
-                    state = SF_SKIP_COLON;
+                    state = SF_GET_TYPE;
                 continue;
             case SF_GET_TYPE:
                 //if (program->tokens[i].type == QUEST)
@@ -436,7 +447,7 @@ int getFunTable(program_t * program, Symtable * funcTable) {
             default:
                 state++;
         }
-    }
+    }   
     *funcTable = newFuncTable;
     return 0;
 }
