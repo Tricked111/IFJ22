@@ -31,9 +31,9 @@ typedef enum {
     S_RET
 } SemStates;
 
-int varToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local);
-int funCallToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local);
-int semanticControl(const program_t *program);
+int varToken(program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local);
+int funCallToken(program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local);
+int semanticControl(program_t *program);
 
 typedef enum {
     SF_START,
@@ -49,6 +49,6 @@ typedef enum {
     SF_FUN_START
 } FunDefsStates;
 
-int getFunTable(const program_t * program, Symtable * funcTable);
+int getFunTable(program_t * program, Symtable * funcTable);
 
 #endif

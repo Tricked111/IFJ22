@@ -10,7 +10,7 @@
 #include "semantic.h"
 
 
-int varToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local) {
+int varToken(program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local) {
     SymtableData *data = malloc(sizeof(SymtableData));
     if(data == NULL) {
         return 99;
@@ -65,7 +65,7 @@ int varToken(const program_t *program, int poss, Symtable *globalTable, token_t 
 }
 
 // volanie funkcie, nie definicia
-int funCallToken(const program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local) {     //pridat ci hladat v loaklnej a potom v globalnej tabulke param
+int funCallToken(program_t *program, int poss, Symtable *globalTable, token_t token, Symtable *localTable, bool local) {     //pridat ci hladat v loaklnej a potom v globalnej tabulke param
     Symtable *table;
     if(local) {
         table = localTable; 
@@ -131,7 +131,7 @@ void printAllFuncParams(Symtable funcTable) {
     printf("\n\tReturn type: %d\n", (int)funcTable->data.dtype.func_type.retype);
 }*/
 
-int semanticControl(const program_t *program) {
+int semanticControl(program_t *program) {
     //Symtable globalTable = NULL;
     bool local = false;
     bool quest = false;
@@ -366,7 +366,7 @@ int semanticControl(const program_t *program) {
     return 0;
 }
 
-int getFunTable(const program_t * program, Symtable * funcTable) {
+int getFunTable(program_t * program, Symtable * funcTable) {
     Symtable newFuncTable = NULL;
     built_function(&newFuncTable);
     FunDefsStates state = SF_START;
