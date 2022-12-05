@@ -9,8 +9,9 @@ DATA=src/data/data
 SYMTABLE=src/symtable/symtable
 SEMANTIC=src/semantic/semantic
 EXPRESSION=src/expressions/expr
+GENERATOR=src/generator/generator
 
-OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o $(BST).o $(DATA).o $(SYMTABLE).o $(SEMANTIC).o $(EXPRESSION).o main.o
+OBJFILES = $(SCANNER).o $(PARSER).o $(STRING).o $(BST).o $(DATA).o $(SYMTABLE).o $(SEMANTIC).o $(EXPRESSION).o $(GENERATOR).o main.o
 NAME=IFJ22
 
 

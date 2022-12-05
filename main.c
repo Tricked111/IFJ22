@@ -18,6 +18,7 @@
 #include "src/data/data.h"
 #include "src/symtable/symtable.h"
 #include "src/semantic/semantic.h"
+#include "src/generator/generator.h"
 
 
 void printProgramTokens(program_t * program) {
@@ -96,7 +97,6 @@ void printProgramTokens(program_t * program) {
 
 int main()
 {
-    //TODO typo -> expr.c -> puch | memmory leaks
     if (grammarInit())
         return INTERN_ERR;
     program_t program;
@@ -109,13 +109,19 @@ int main()
     //printProgramTokens(&program);
     retValue = parseProgram(&program);
     if (retValue) {        
-        //printf("PARSE: %d\n", retValue);
+        printf("%d\n", retValue);
         return retValue;
-    }
+    }    
 
     retValue = semanticControl(&program);
     if (retValue) {        
-        //printf("%d\n", retValue);
+        printf("%d\n", retValue);
+        return retValue;
+    }
+
+    retValue = generateProgram(program);
+    if (retValue) {
+        printf("%d\n", retValue);
         return retValue;
     }
     

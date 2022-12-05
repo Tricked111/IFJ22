@@ -1,9 +1,5 @@
 <?php
 declare(strict_types=1);
-null === 6;
-$a = null;
-ahoj($a, null);
-function ahoj(?int $c, ?int $h) : int {
-    return $c;  
-}
+$a = 5;
+$b = 3.2 * 5;
 
