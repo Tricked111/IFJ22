@@ -256,6 +256,27 @@ void built_function(Symtable * table){
     if(insertSymtable(&(*table),get_key("chr"),&chr)){
         fprintf(stderr,"Error insert table in build function!");
     }
+
+    SymtableData floatval;
+    add_func(&floatval);
+    add_retype(&floatval,FLOAT_IND);
+    if(insertSymtable(&(*table),get_key("floatval"),&floatval)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+    SymtableData intval;
+    add_func(&intval);
+    add_retype(&intval,INT_IND);
+    if(insertSymtable(&(*table),get_key("intval"),&intval)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
+
+    SymtableData strval;
+    add_func(&strval);
+    add_retype(&strval,STRING_IND);
+    if(insertSymtable(&(*table),get_key("strval"),&strval)){
+        fprintf(stderr,"Error insert table in build function!");
+    }
 }
 
 /**

@@ -81,14 +81,36 @@ int funCallToken(program_t *program, int poss, Symtable *globalTable, token_t to
     size_t count = 0;
 
     if(strcmp(token.textData.str, "write") == 0) {
+        while(program->tokens[poss].type != BR_C) {
+            if(program->tokens[poss].type == VAR) {
+                if(!symtableSearch(table, getKey(program->tokens[poss].textData.str))) {
+                    return 5;
+                }
+            }
+            poss++;
+        }
+        return 0;
+    }
+
+    if(strcmp(token.textData.str, "intval") == 0 || strcmp(token.textData.str, "floatval") == 0 || strcmp(token.textData.str, "strval") == 0) {
+        while(program->tokens[poss].type != BR_C) {
+            if(program->tokens[poss].type == VAR) {
+                if(!symtableSearch(table, getKey(program->tokens[poss].textData.str))) {
+                    return 5;
+                }
+            } else if(program->tokens[poss].type == COMMA) {
+                count--;
+            }
+            count++;
+            poss++;
+        }
+        if(count != 1) {
+            return 4;
+        }
         return 0;
     }
     
     while(program->tokens[poss].type != BR_C) {      
-
-        if((count + 1) > data->dtype.func_type.lenght) {    
-            return 4;
-        }
 
         if(program->tokens[poss].type == VAR) {
             uint32_t key = getKey(program->tokens[poss].textData.str);
@@ -228,7 +250,7 @@ int semanticControl(program_t *program) {
                         return 6;
                     }
                     state = S_START;
-                } else if(tok.type == FUN) {
+                /**} else if(tok.type == FUN) {
                     err = funCallToken(program, i+2, &funcTable, tok, &localTable, local);
                     if(err != 0) {
                         return err;
@@ -236,7 +258,7 @@ int semanticControl(program_t *program) {
                     if(local && ((symtableGet(&funcTable, funKey)->dtype.func_type.retype) != symtableGet(&funcTable, getKey(tok.textData.str))->dtype.func_type.retype)) {
                         return 4;
                     }
-                    state = S_ROW_END;
+                    state = S_ROW_END;  **/
                 } else {
                     expression = makeExpression(program, i);    //int, float, string/ vyraz, zavolat erika, vyhodi TypesInd
                     if(local) {
@@ -429,9 +451,6 @@ int getFunTable(program_t * program, Symtable * funcTable) {
                     state = SF_GET_TYPE;
                 continue;
             case SF_GET_TYPE:
-                //if (program->tokens[i].type == QUEST)
-                  //  state = SF_GET_QUEST_TYPE;
-                //else 
                 if (program->tokens[i].type == TYPE) {
                     add_retype(newFuncData, (TypesInd)program->tokens[i].numericData.ivalue);
                     state = SF_FUN_START;
