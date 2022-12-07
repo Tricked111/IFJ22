@@ -1,3 +1,13 @@
+/******************************************************************************
+ *                                  IFJ22
+ *                              generator.h
+ * 
+ *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *      Purpose: IFJcode22 code generation header
+ * 
+ *                        Last change: 7. 12. 2022
+ *****************************************************************************/
+
 #ifndef GENERATOR_H
 #define GENERATOR_H
 

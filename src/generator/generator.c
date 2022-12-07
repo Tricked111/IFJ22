@@ -1,3 +1,13 @@
+/******************************************************************************
+ *                                  IFJ22
+ *                              generator.c
+ * 
+ *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *      Purpose: IFJcode22 code generation
+ * 
+ *                        Last change: 7. 12. 2022
+ *****************************************************************************/
+
 #include "generator.h"
 #include <stdio.h>
 #include <stdlib.h>
