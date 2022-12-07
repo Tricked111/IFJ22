@@ -3,9 +3,10 @@
  *                              ifj_string.c
  * 
  *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *               Erik Hrubý        (xhruby30)
  *      Purpose: Declaration of operations on strings
  * 
- *                        Last change: 16. 11. 2022
+ *                        Last change: 07. 12. 2022
  *****************************************************************************/
 
 #include "ifj_string.h"
@@ -62,4 +63,26 @@ char * stringRead(string_t * str)
 int stringLength(string_t * str)
 {
     return str->len;
+}
+
+string_t convertToIFJCode(string_t * str) {
+    char c;
+    string_t converted;
+    stringInit(&converted);
+    for (size_t i = 0; i < str->len; i++) {
+        c = str->str[i];
+        if (c <= 32 || c == 35 || c == 92) {
+            stringAppendCode(&converted, c);
+        } else {
+            stringAppend(&converted, c);
+        }
+    }
+    return converted;
+}
+
+void stringAppendCode(string_t * str, int code) {
+    stringAppend(str, '\\');
+    stringAppend(str, '0');
+    stringAppend(str, (code / 10) + '0');
+    stringAppend(str, (code % 10) + '0');
 }

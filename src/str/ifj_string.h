@@ -4,9 +4,10 @@
  *                              ifj_string.h
  * 
  *      Authors: Nikita Kotvitskiy (xkotvi01)
+ *               Erik Hrubý        (xhruby30)
  *      Purpose: Declaration of string structure and operations on them
  * 
- *                        Last change: 16. 11. 2022
+ *                        Last change: 07. 12. 2022
  *****************************************************************************/
 
 #ifndef IFJ_STRING_H
@@ -38,5 +39,9 @@ void stringCopy(string_t * strDest, string_t * strSource);
 char * stringRead(string_t * str);
 //Returns length of string on str address.
 int stringLength(string_t * str);
+//Converts string to IFJ22Code string
+string_t convertToIFJCode(string_t * str);
+//Appends symbols of number code to the end of string
+void stringAppendCode(string_t * str, int code);
 
 #endif
