@@ -71,9 +71,28 @@ string_t convertToIFJCode(string_t * str) {
     stringInit(&converted);
     for (size_t i = 0; i < str->len; i++) {
         c = str->str[i];
-        if (c <= 32 || c == 35 || c == 92) {
+        if (c <= 32 || c == 35 || c == 34 || c == 10 || c == 11) {
             stringAppendCode(&converted, c);
-        } else {
+        }
+        else if (c == 92) {
+            i++;
+            c = str->str[i];
+            switch (c) {
+                case 'n':
+                    c = '\n';
+                    break;
+                case 't':
+                    c = '\t';
+                    break;
+                case '\\':
+                    c = '\\';
+                    break;
+                default:
+                    break;
+            }
+            stringAppendCode(&converted, c);
+        }    
+        else {
             stringAppend(&converted, c);
         }
     }
@@ -82,7 +101,7 @@ string_t convertToIFJCode(string_t * str) {
 
 void stringAppendCode(string_t * str, int code) {
     stringAppend(str, '\\');
-    stringAppend(str, '0');
+    stringAppend(str, (code / 100) + '0');
     stringAppend(str, (code / 10) + '0');
     stringAppend(str, (code % 10) + '0');
 }

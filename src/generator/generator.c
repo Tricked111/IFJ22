@@ -193,7 +193,8 @@ void ifjStackPush(token_t tok) {
             printf("%s%a\n", IFJ_FLOAT, tok.numericData.fvalue);
             break;
         case STRING:
-            printf("%s%s\n", IFJ_STRING, stringRead(&tok.textData));
+            string_t ifjString = convertToIFJCode(&tok.textData);
+            printf("%s%s\n", IFJ_STRING, stringRead(&ifjString));
             break;
         default:
             printf("nil@nil\n");
