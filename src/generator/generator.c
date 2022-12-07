@@ -46,6 +46,11 @@ int generateProgram(program_t prog) {
     printf(READI_FUN);
     printf(READF_FUN);
     printf(SUBSTRING_FUN);
+    printf(CHR_FUN);
+    printf(ORD_FUN);
+    printf(INTVAL_FUN);
+    printf(FLOATVAL_FUN);
+    printf(STRVAL_FUN);
 
     gen.currentPosition = PROG_START;
     while (gen.currentPosition < prog.tokenCount) {
@@ -196,8 +201,11 @@ void ifjStackPush(token_t tok) {
             string_t ifjString = convertToIFJCode(&tok.textData);
             printf("%s%s\n", IFJ_STRING, stringRead(&ifjString));
             break;
+        case TYPE:
+            if (tok.numericData.ivalue == (long long)NULL_IND)
+                printf("nil@nil\n");
+            break;
         default:
-            printf("nil@nil\n");
             break;
     }
 }

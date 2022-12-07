@@ -295,6 +295,123 @@ RETURN\n\
 LABEL substring_err_nil\n\
 EXIT int@8\n"
 
+#define ORD_FUN "\
+LABEL ord\n\
+PUSHFRAME\n\
+DEFVAR LF@returned\n\
+DEFVAR LF@param1\n\
+POPS LF@param1\n\
+PUSHS LF@param1\n\
+PUSHS string@\n\
+JUMPIFEQS ord-empty\n\
+DEFVAR LF@param1-type\n\
+TYPE LF@param1-type LF@param1\n\
+JUMPIFNEQ ord-exit LF@param1-type string@string\n\
+STRI2INT LF@returned LF@param1 int@0\n\
+PUSHS LF@returned\n\
+JUMP ord-return\n\
+LABEL ord-exit\n\
+PUSHS int@0\n\
+POPFRAME\n\
+RETURN\n\
+LABEL ord-return\n\
+POPFRAME\n\
+RETURN\n\
+LABEL ord-empty\n\
+PUSHS int@0\n\
+POPFRAME\n\
+RETURN\n"
+
+#define INTVAL_FUN "\
+LABEL intval\n\
+DEFVAR TF@ret\n\
+DEFVAR TF@param1\n\
+PUSHFRAME\n\
+POPS LF@param1\n\
+DEFVAR LF@param1-type\n\
+TYPE LF@param1-type LF@param1\n\
+JUMPIFEQ intToint LF@param1-type string@int\n\
+JUMPIFEQ floatToint LF@param1-type string@float\n\
+JUMPIFEQ nilToint LF@param1-type string@nil\n\
+LABEL intToint\n\
+PUSHS LF@param1\n\
+POPFRAME\n\
+RETURN\n\
+LABEL floatToint\n\
+FLOAT2INT LF@ret LF@param1\n\
+PUSHS LF@ret\n\
+POPFRAME\n\
+RETURN\n\
+LABEL nilToint\n\
+PUSHS int@0\n\
+POPFRAME\n\
+RETURN\n\
+POPFRAME\n\
+RETURN\n"
+
+#define FLOATVAL_FUN "\
+LABEL floatval\n\
+DEFVAR TF@ret\n\
+DEFVAR TF@param1\n\
+PUSHFRAME\n\
+POPS LF@param1\n\
+DEFVAR LF@param1-type\n\
+TYPE LF@param1-type LF@param1\n\
+JUMPIFEQ intTofloat LF@param1-type string@int\n\
+JUMPIFEQ floatTofloat LF@param1-type string@float\n\
+JUMPIFEQ nilTofloat LF@param1-type string@nil\n\
+LABEL intTofloat\n\
+INT2FLOAT LF@ret LF@param1\n\
+PUSHS LF@ret\n\
+POPFRAME\n\
+RETURN\n\
+LABEL floatTofloat\n\
+PUSHS LF@param1\n\
+POPFRAME\n\
+RETURN\n\
+LABEL nilTofloat\n\
+PUSHS float@0x0.0p+0\n\
+POPFRAME\n\
+RETURN\n\
+POPFRAME\n\
+RETURN\n"
+
+#define STRVAL_FUN "\
+LABEL strval\n\
+PUSHFRAME\n\
+DEFVAR LF@ret\n\
+DEFVAR LF@param1\n\
+POPS LF@param1\n\
+DEFVAR LF@param1-type\n\
+TYPE LF@param1-type LF@param1\n\
+JUMPIFEQ stringTostr LF@param1-type string@string\n\
+JUMPIFEQ nilTostr LF@param1-type string@nil\n\
+LABEL nilTostr\n\
+PUSHS string@\n\
+POPFRAME\n\
+RETURN\n\
+LABEL stringTostr\n\
+PUSHS LF@param1\n\
+POPFRAME\n\
+RETURN\n"
+
+#define CHR_FUN "\
+LABEL chr\n\
+DEFVAR TF@returned\n\
+DEFVAR TF@param1\n\
+PUSHFRAME\n\
+POPS LF@param1\n\
+DEFVAR LF@param1-type\n\
+TYPE LF@param1-type LF@param1\n\
+JUMPIFNEQ chr-exit LF@param1-type string@int\n\
+INT2CHAR LF@returned LF@param1\n\
+PUSHS LF@returned\n\
+JUMP chr-return\n\
+LABEL chr-exit\n\
+EXIT int@4\n\
+LABEL chr-return\n\
+POPFRAME\n\
+RETURN\n"
 
 typedef struct Generator {
     int counter;

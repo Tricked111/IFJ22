@@ -1,3 +1,4 @@
 <?php
 declare(strict_types=1);
-write("\tString\\ test\n");
+$a = intval(null);
+write($a, "\n");
