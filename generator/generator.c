@@ -5,16 +5,16 @@
 #include "../data/data.h"
 #include "../expressions/expr.h"
 
-void varAssignment(generator_t * gen, program_t prog);
-void expression(generator_t * gen, program_t prog);
-void functionDef(generator_t * gen, program_t prog);
-void whileDef(generator_t * gen, program_t prog);
-void ifDef(generator_t * gen, program_t prog);\
-void funCall(generator_t * gen, program_t prog);
-void detectConstruction(generator_t * gen, program_t prog);
+void varAssignment(generator_t * gen, FILE * progFile, program_t prog);
+void expression(generator_t * gen, FILE * progFile, program_t prog);
+void functionDef(generator_t * gen, FILE * progFile, program_t prog);
+void whileDef(generator_t * gen, FILE * progFile, program_t prog);
+void ifDef(generator_t * gen, FILE * progFile, program_t prog);\
+void funCall(generator_t * gen, FILE * progFile, program_t prog);
+void detectConstruction(generator_t * gen, FILE * progFile, program_t prog);
 void constructionSkip(generator_t * gen, program_t prog);
 void comandSkip(generator_t * gen, program_t prog);
-void defAllVarsInConstr(generator_t * gen, program_t prog);
+void defAllVarsInConstr(generator_t * gen, FILE * progFile, program_t prog);
 
 
 int generateProgram(program_t prog) {
@@ -27,43 +27,49 @@ int generateProgram(program_t prog) {
     bstInit(&(gen.functions));
     token_t tok;
 
-    printf("%s\n", IFJ_PROG_START);
-    printf("%s %s\n%s %s\n%s %s\n%s %s\n", DEFVAR, TMP1, DEFVAR, TMP2, DEFVAR, TMP3, DEFVAR, ARG_CNT);
-    printf("%s __main\n", JUMP);
+    FILE * ifjCodeProg;
+    if ((ifjCodeProg = fopen(OUTPUT_FILE_NAME, "w")) == NULL)
+        return INTERN_ERR;
+
+    fprintf(ifjCodeProg, "%s\n", IFJ_PROG_START);
+    fprintf(ifjCodeProg, "%s %s\n%s %s\n%s %s\n%s %s\n", DEFVAR, TMP1, DEFVAR, TMP2, DEFVAR, TMP3, DEFVAR, ARG_CNT);
+    fprintf(ifjCodeProg, "%s __main\n", JUMP);
     
-    printf(WRITE_FUN);
-    printf(READS_FUN);
-    printf(READI_FUN);
-    printf(READF_FUN);
-    printf(SUBSTRING_FUN);
+    fprintf(ifjCodeProg, WRITE_FUN);
+    fprintf(ifjCodeProg, READS_FUN);
+    fprintf(ifjCodeProg, READI_FUN);
+    fprintf(ifjCodeProg, READF_FUN);
+    fprintf(ifjCodeProg, SUBSTRING_FUN);
 
     gen.currentPosition = PROG_START;
     while (gen.currentPosition < prog.tokenCount) {
         tok = prog.tokens[gen.currentPosition];
         if (tok.type == KW && tok.numericData.ivalue == KW_FUNC_IND)
-            functionDef(&gen, prog);
+            functionDef(&gen, ifjCodeProg, prog);
         gen.currentPosition++;
     }
     
-    printf("%s __main\n%s\n%s\n", LABEL, CREATEFRAME, PUSHFRAME);
+    fprintf(ifjCodeProg, "%s __main\n%s\n%s\n", LABEL, CREATEFRAME, PUSHFRAME);
     gen.currentPosition = PROG_START;
     while (gen.currentPosition < prog.tokenCount) {
-        detectConstruction(&gen, prog);
+        detectConstruction(&gen, ifjCodeProg, prog);
         gen.currentPosition++;
     }
     
-    printf("POPFRAME");
+    fprintf(ifjCodeProg, "POPFRAME");
+    if (fclose(ifjCodeProg))
+        return INTERN_ERR;
     return 0;
 }
 
-void detectConstruction(generator_t * gen, program_t prog) {
+void detectConstruction(generator_t * gen, FILE * progFile, program_t prog) {
     token_t tok = prog.tokens[gen->currentPosition];
     switch (tok.type) {
         case VAR:
             if (prog.tokens[gen->currentPosition + 1].type == ASSIG)
-                varAssignment(gen, prog);
+                varAssignment(gen, progFile, prog);
             else
-                expression(gen, prog);
+                expression(gen, progFile, prog);
             break;
         case KW:
             switch ((KeyWordsInd)tok.numericData.ivalue) {
@@ -71,21 +77,21 @@ void detectConstruction(generator_t * gen, program_t prog) {
                     constructionSkip(gen, prog);
                     break;
                 case KW_WHILE_IND:
-                    whileDef(gen, prog);
+                    whileDef(gen, progFile, prog);
                     break;
                 case KW_IF_IND:
-                    ifDef(gen, prog);
+                    ifDef(gen, progFile, prog);
                     break;
                 case KW_RET_IND:
                     if (gen->global == false) {
                         if (prog.tokens[gen->currentPosition + 1].type != SEMICOLON) {
                             gen->currentPosition++;
-                            expression(gen, prog);
+                            expression(gen, progFile, prog);
                         }
-                        printf("POPFRAME\n%s\n", RETURN);
+                        fprintf(progFile, "POPFRAME\n%s\n", RETURN);
                     }
                     else {
-                        printf("%s\n", EXIT);
+                        fprintf(progFile, "%s\n", EXIT);
                         comandSkip(gen, prog);
                     }
                 default:
@@ -93,20 +99,20 @@ void detectConstruction(generator_t * gen, program_t prog) {
             }
             break;
         case INT:
-            expression(gen, prog);
+            expression(gen, progFile, prog);
             break;
         case FLOAT:
-            expression(gen, prog);
+            expression(gen, progFile, prog);
             break;
         case STRING:
-            expression(gen, prog);
+            expression(gen, progFile, prog);
             break;
         case FUN:
-            expression(gen, prog);
+            expression(gen, progFile, prog);
             break;
         case TYPE:
             if (tok.numericData.ivalue == (long long)NULL_IND)
-                expression(gen, prog);
+                expression(gen, progFile, prog);
             break;
         default:
             break;
@@ -140,114 +146,114 @@ void comandSkip(generator_t * gen, program_t prog) {
     }
 }
 
-void varAssignment(generator_t * gen, program_t prog) {
+void varAssignment(generator_t * gen, FILE * progFile, program_t prog) {
     string_t * varName = &(prog.tokens[gen->currentPosition].textData);
     key_t key = get_key(stringRead(varName));
     bst_t ** table = gen->global ? &(gen->globalVars) : &(gen->localVars);
     if (!bstSearch(*table, key)) {
-        printf("%s %s%s\n", DEFVAR, LOCAL_VAR, stringRead(varName));
+        fprintf(progFile, "%s %s%s\n", DEFVAR, LOCAL_VAR, stringRead(varName));
         bstInsert(table, key, NULL);
     }
     gen->currentPosition += 2;
-    expression(gen, prog);
-    printf("%s %s%s\n", POPS, LOCAL_VAR, stringRead(varName));
+    expression(gen, progFile, prog);
+    fprintf(progFile, "%s %s%s\n", POPS, LOCAL_VAR, stringRead(varName));
 }
 
-void ifjStackPush(token_t tok);
-void ifjOperate(token_t tok, generator_t * gen);
-void expression(generator_t * gen, program_t prog) {
+void ifjStackPush(FILE * progFile, token_t tok);
+void ifjOperate(FILE * progFile, token_t tok, generator_t * gen);
+void expression(generator_t * gen, FILE * progFile, program_t prog) {
     if (prog.tokens[gen->currentPosition].type == FUN) {
-        funCall(gen, prog);
+        funCall(gen, progFile, prog);
         return;
     }
     pfExpr_t expr = makeExpression(&prog, gen->currentPosition);
     for (int i = 0; i < expr.size; i++) {
         if (expr.expr[i].type == OPER)
-            ifjOperate(expr.expr[i], gen);
+            ifjOperate(progFile, expr.expr[i], gen);
         else
-            ifjStackPush(expr.expr[i]);
+            ifjStackPush(progFile, expr.expr[i]);
         gen->currentPosition++;
     }
 }
 
-void ifjStackPush(token_t tok) {
-    printf("%s ", PUSHS);
+void ifjStackPush(FILE * progFile, token_t tok) {
+    fprintf(progFile, "%s ", PUSHS);
     switch (tok.type) {
         case VAR:
-            printf("%s%s\n", LOCAL_VAR, stringRead(&tok.textData));
+            fprintf(progFile, "%s%s\n", LOCAL_VAR, stringRead(&tok.textData));
             break;
         case INT:
-            printf("%s%lld\n", IFJ_INTEGER, tok.numericData.ivalue);
+            fprintf(progFile, "%s%lld\n", IFJ_INTEGER, tok.numericData.ivalue);
             break;
         case FLOAT:
-            printf("%s%a\n", IFJ_FLOAT, tok.numericData.fvalue);
+            fprintf(progFile, "%s%a\n", IFJ_FLOAT, tok.numericData.fvalue);
             break;
         case STRING:
-            printf("%s%s\n", IFJ_STRING, stringRead(&tok.textData));
+            fprintf(progFile, "%s%s\n", IFJ_STRING, stringRead(&tok.textData));
             break;
         default:
-            printf("nil@nil\n");
+            fprintf(progFile, "nil@nil\n");
             break;
     }
 }
 
-void ifjOperate(token_t tok, generator_t * gen) {
+void ifjOperate(FILE * progFile, token_t tok, generator_t * gen) {
     OperatorsInd oper = (OperatorsInd)tok.numericData.ivalue;
     if (oper == ADD_IND || oper == SUB_IND || oper == MUL_IND) {
-        printf(NUMERIC_CONVERTER, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
+        fprintf(progFile, NUMERIC_CONVERTER, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
         gen->counter++;
         switch (oper) {
             case ADD_IND:
-                printf("%s\n", ADDS);
+                fprintf(progFile, "%s\n", ADDS);
                 break;
             case SUB_IND:
-                printf("%s\n", SUBS);
+                fprintf(progFile, "%s\n", SUBS);
                 break;
             case MUL_IND:
-                printf("%s\n", MULS);
+                fprintf(progFile, "%s\n", MULS);
                 break;
             default:
                 break;
         }
     }
     else if (oper == DIV_IND) {
-        printf(FLOAT_CONVERTER, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
+        fprintf(progFile, FLOAT_CONVERTER, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
         gen->counter++;
-        printf("%s\n", DIVS);
+        fprintf(progFile, "%s\n", DIVS);
     }
     else if (oper == CON_IND) {
-        printf(CONCATENATION, gen->counter, gen->counter, gen->counter, gen->counter);
+        fprintf(progFile, CONCATENATION, gen->counter, gen->counter, gen->counter, gen->counter);
         gen->counter++;
     }
     else if (oper == EQ_IND || oper == NE_IND) {
-        printf(EQVIVAL, gen->counter, gen->counter, gen->counter, gen->counter);
+        fprintf(progFile, EQVIVAL, gen->counter, gen->counter, gen->counter, gen->counter);
         gen->counter++;
         if (oper == NE_IND)
-            printf("%s\n", NOTS);
+            fprintf(progFile, "%s\n", NOTS);
     }
     else {
-        printf(NUMERIC_CONVERTER, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
+        fprintf(progFile, NUMERIC_CONVERTER, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
         gen->counter++;
         switch (oper) {
             case GT_IND:
-                printf("GTS\n");
+                fprintf(progFile, "GTS\n");
                 break;
             case LT_IND:
-                printf("LTS\n");
+                fprintf(progFile, "LTS\n");
                 break;
             case GE_IND:
-                printf("GTS\n");
-                printf("PUSHS GF@__TMP1\nPUSHS GF@__TMP2\n");
-                printf(EQVIVAL, gen->counter, gen->counter, gen->counter, gen->counter);
+                fprintf(progFile, "GTS\n");
+                fprintf(progFile, "PUSHS GF@__TMP1\nPUSHS GF@__TMP2\n");
+                fprintf(progFile, EQVIVAL, gen->counter, gen->counter, gen->counter, gen->counter);
                 gen->counter++;
-                printf("ORS\n");
+                fprintf(progFile, "ORS\n");
                 break;
             case LE_IND:
-                printf("LTS\n");
-                printf("PUSHS GF@__TMP1\nPUSHS GF@__TMP2\n");
-                printf(EQVIVAL, gen->counter, gen->counter, gen->counter, gen->counter);
+                fprintf(progFile, "LTS\n");
+                fprintf(progFile, "PUSHS GF@__TMP1\nPUSHS GF@__TMP2\n");
+                fprintf(progFile, EQVIVAL, gen->counter, gen->counter, gen->counter, gen->counter);
                 gen->counter++;
-                printf("ORS\n");
+                fprintf(progFile, "ORS\n");
                 break;
             default:
                 break;
@@ -255,9 +261,9 @@ void ifjOperate(token_t tok, generator_t * gen) {
     }
 }   
 
-void functionDef(generator_t * gen, program_t prog) {
+void functionDef(generator_t * gen, FILE * progFile, program_t prog) {
     gen->currentPosition++;
-    printf("%s %s\n", LABEL, stringRead(&(prog.tokens[gen->currentPosition].textData)));
+    fprintf(progFile, "%s %s\n", LABEL, stringRead(&(prog.tokens[gen->currentPosition].textData)));
     gen->global = false;
     token_t tok;
 
@@ -265,7 +271,7 @@ void functionDef(generator_t * gen, program_t prog) {
         gen->currentPosition++;
         tok = prog.tokens[gen->currentPosition];
         if (tok.type == VAR) {
-            printf("%s %s%s\n%s %s%s\n", DEFVAR, TMP_VAR, tok.textData.str, POPS, TMP_VAR, tok.textData.str);
+            fprintf(progFile, "%s %s%s\n%s %s%s\n", DEFVAR, TMP_VAR, tok.textData.str, POPS, TMP_VAR, tok.textData.str);
             key_t key = get_key(tok.textData.str);
             bstInsert(&(gen->localVars), key, NULL);
         }
@@ -280,27 +286,27 @@ void functionDef(generator_t * gen, program_t prog) {
             break;
     }
 
-    printf("%s\n", PUSHFRAME);
+    fprintf(progFile, "%s\n", PUSHFRAME);
     while (true) {
-        detectConstruction(gen, prog);
+        detectConstruction(gen, progFile, prog);
         gen->currentPosition++;
         tok = prog.tokens[gen->currentPosition];
         if (tok.type == CB_C)
             break;
     }
-    printf(FUNEND);
+    fprintf(progFile, FUNEND);
     gen->global = true;
     bstDestroy(&(gen->localVars));
 }
 
-void whileDef(generator_t * gen, program_t prog) {
+void whileDef(generator_t * gen, FILE * progFile, program_t prog) {
     if (gen->constrCnt == 0)
-        defAllVarsInConstr(gen, prog);
+        defAllVarsInConstr(gen, progFile, prog);
     int constrInd = gen->counter;
     gen->counter++;
     gen->currentPosition += 2;
-    printf("LABEL __WHILE_%d_START\n", constrInd);
-    expression(gen, prog);
+    fprintf(progFile, "LABEL __WHILE_%d_START\n", constrInd);
+    expression(gen, progFile, prog);
     while (true)
     {
         gen->currentPosition++;
@@ -309,28 +315,29 @@ void whileDef(generator_t * gen, program_t prog) {
     }
     gen->constrCnt++;
 
-    printf(LOGIC_CHECK, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
+    fprintf(progFile, LOGIC_CHECK, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
     gen->counter++;
-    printf("%s bool@false\nJUMPIFEQS __WHILE_%d_END\n", PUSHS, constrInd);
+    fprintf(progFile, "%s bool@false\nJUMPIFEQS __WHILE_%d_END\n", PUSHS, constrInd);
     token_t tok = prog.tokens[gen->currentPosition];
     while(true) {
-        detectConstruction(gen, prog);
+        detectConstruction(gen, progFile, prog);
         gen->currentPosition++;
         tok = prog.tokens[gen->currentPosition];
         if (tok.type == CB_C)
             break;
     }
-    printf("JUMP __WHILE_%d_START\nLABEL __WHILE_%d_END\n", constrInd, constrInd);
+    printf("%d, %lld\n", prog.tokens[gen->currentPosition].type, prog.tokens[gen->currentPosition].numericData.ivalue);
+    fprintf(progFile, "JUMP __WHILE_%d_START\nLABEL __WHILE_%d_END\n", constrInd, constrInd);
     gen->constrCnt--;
 }
 
-void ifDef(generator_t * gen, program_t prog) {
+void ifDef(generator_t * gen, FILE * progFile, program_t prog) {
     if (gen->constrCnt == 0)
-        defAllVarsInConstr(gen, prog);
+        defAllVarsInConstr(gen, progFile, prog);
     int constrInd = gen->counter;
     gen->counter++;
     gen->currentPosition += 2;
-    expression(gen, prog);
+    expression(gen, progFile, prog);
     while (true)
     {
         gen->currentPosition++;
@@ -339,33 +346,34 @@ void ifDef(generator_t * gen, program_t prog) {
     }
     gen->constrCnt++;
     
-    printf(LOGIC_CHECK, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
+    fprintf(progFile, LOGIC_CHECK, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter, gen->counter);
     gen->counter++;
-    printf("%s bool@false\nJUMPIFEQS __IF_%d_ELSE\n", PUSHS, constrInd);\
+    fprintf(progFile, "%s bool@false\nJUMPIFEQS __IF_%d_ELSE\n", PUSHS, constrInd);\
     token_t tok = prog.tokens[gen->currentPosition];
     while(true) {
-        detectConstruction(gen, prog);
+        detectConstruction(gen, progFile, prog);
         gen->currentPosition++;
         tok = prog.tokens[gen->currentPosition];
         if (tok.type == KW && tok.numericData.ivalue == (long long)KW_ELSE_IND)
             break;
     }
-    printf("JUMP __IF_%d_END\n", constrInd);
-    printf("%s __IF_%d_ELSE\n", LABEL, constrInd);
+    fprintf(progFile, "JUMP __IF_%d_END\n", constrInd);
+    fprintf(progFile, "%s __IF_%d_ELSE\n", LABEL, constrInd);
     while(true) {
-        detectConstruction(gen, prog);
+        detectConstruction(gen, progFile, prog);
         gen->currentPosition++;
         tok = prog.tokens[gen->currentPosition];
         if (tok.type == CB_C)
             break;
     }
-    printf("LABEL __IF_%d_END\n", constrInd);
+    printf("%d, %lld\n", prog.tokens[gen->currentPosition].type, prog.tokens[gen->currentPosition].numericData.ivalue);
+    fprintf(progFile, "LABEL __IF_%d_END\n", constrInd);
     gen->constrCnt--;
 }
 
-void funCall(generator_t * gen, program_t prog) {
+void funCall(generator_t * gen, FILE * progFile, program_t prog) {
     string_t funName = prog.tokens[gen->currentPosition].textData;
-    printf("%s\n", CREATEFRAME);
+    fprintf(progFile, "%s\n", CREATEFRAME);
     token_t tok;
     gen->currentPosition++;
     int argCnt = 0;
@@ -377,18 +385,18 @@ void funCall(generator_t * gen, program_t prog) {
     while (true) {
         tok = prog.tokens[gen->currentPosition];
         if (tok.type == INT || tok.type == FLOAT || tok.type == STRING || tok.type == VAR || (tok.type == KW && tok.numericData.ivalue == (long long)NULL_IND)) {
-            ifjStackPush(tok);
+            ifjStackPush(progFile, tok);
             argCnt++;
         }
         if (tok.type == BR_O)
             break;
         gen->currentPosition--;
     }
-    printf("MOVE GF@__ARG_CNT int@%d\n", argCnt);
-    printf("%s %s\n", CALL, funName.str);
+    fprintf(progFile, "MOVE GF@__ARG_CNT int@%d\n", argCnt);
+    fprintf(progFile, "%s %s\n", CALL, funName.str);
 }
 
-void defAllVarsInConstr(generator_t * gen, program_t prog) {
+void defAllVarsInConstr(generator_t * gen, FILE * progFile, program_t prog) {
     gen->subPosition = gen->currentPosition;
     while(true) {
         if (prog.tokens[gen->subPosition].type == CB_O)
@@ -404,7 +412,7 @@ void defAllVarsInConstr(generator_t * gen, program_t prog) {
         if (tok.type == VAR && prog.tokens[gen->subPosition + 1].type == ASSIG) {
             key_t key = get_key(tok.textData.str);
             if (!bstSearch(*table, key)) {
-                printf("DEFVAR LF@%s\n", tok.textData.str);
+                fprintf(progFile, "DEFVAR LF@%s\n", tok.textData.str);
                 bstInsert(table, key, NULL);
             }
         }

@@ -1,5 +1,19 @@
 <?php
 declare(strict_types=1);
-$a = 5;
-$b = 3.2 * 5;
-
+// Program 1: Vypocet faktorialu (iterativne)
+// Hlavni telo programu
+write("Zadejte");
+$a = readi();
+if ($a === null) {
+write("Chyba");
+} else {}
+if ($a < 0) {
+write("nelze");
+} else {
+$vysl = 1;
+while ($a > 0) {
+$vysl = $vysl * $a;
+$a = $a - 1;
+}
+write($vysl);
+}
